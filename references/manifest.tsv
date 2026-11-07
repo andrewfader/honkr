@@ -1,0 +1,40 @@
+# HONKR reference recordings: University of Iowa Electronic Music Studios, Musical Instrument Samples
+# (Lawrence Fritts), https://theremin.music.uiowa.edu/MIS.html - 'freely available ... may be downloaded and
+# used for any projects, without restrictions'. Anechoic chamber, Neumann KM 84 at 5 ft, 16/44.1, one chromatic
+# octave per file, pp/mf/ff with input levels unchanged between dynamics. Paths are relative to the site root.
+# instrument	dynamic	path
+Flute	mf	sound files/MIS/Woodwinds/flute/Flute.nonvib.mf.C5B5.aiff
+Flute	ff	sound files/MIS/Woodwinds/flute/Flute.nonvib.ff.C5B5.aiff
+Alto flute	pp	sound files/MIS/Woodwinds/altoflute/AltoFlute.pp.C4B4.aiff
+Alto flute	mf	sound files/MIS/Woodwinds/altoflute/AltoFlute.mf.C4B4.aiff
+Alto flute	ff	sound files/MIS/Woodwinds/altoflute/AltoFlute.ff.C4B4.aiff
+Oboe	pp	sound files/MIS/Woodwinds/oboe/Oboe.pp.C5B5.aiff
+Oboe	mf	sound files/MIS/Woodwinds/oboe/Oboe.mf.C5B5.aiff
+Oboe	ff	sound files/MIS/Woodwinds/oboe/Oboe.ff.C5B5.aiff
+Clarinet	pp	sound files/MIS/Woodwinds/Bbclarinet/BbClar.pp.C4B4.aiff
+Clarinet	mf	sound files/MIS/Woodwinds/Bbclarinet/BbClar.mf.C4B4.aiff
+Clarinet	ff	sound files/MIS/Woodwinds/Bbclarinet/BbClar.ff.C4B4.aiff
+Bass clarinet	mf	sound files/MIS/Woodwinds/bassclarinet/BassClarinet.mf.B2Bb3.aiff
+Bassoon	pp	sound files/MIS/Woodwinds/bassoon/Bassoon.pp.C3B3.aiff
+Bassoon	mf	sound files/MIS/Woodwinds/bassoon/Bassoon.mf.C3B3.aiff
+Soprano sax	pp	sound files/MIS/Woodwinds/sopranosaxophone/SopSax.NoVib.pp.C5B5.aiff
+Soprano sax	mf	sound files/MIS/Woodwinds/sopranosaxophone/SopSax.NoVib.mf.C5B5.aiff
+Soprano sax	ff	sound files/MIS/Woodwinds/sopranosaxophone/SopSax.NoVib.ff.C5B5.aiff
+Alto sax	pp	sound files/MIS/Woodwinds/altosaxophone/AltoSax.NoVib.pp.C4B4.aiff
+Alto sax	mf	sound files/MIS/Woodwinds/altosaxophone/AltoSax.NoVib.mf.C4B4.aiff
+Alto sax	ff	sound files/MIS/Woodwinds/altosaxophone/AltoSax.NoVib.ff.C4B4.aiff
+French horn	pp	sound files/MIS/Brass/frenchhorn/Horn.pp.C4B4.aiff
+French horn	mf	sound files/MIS/Brass/frenchhorn/Horn.mf.C4B4.aiff
+French horn	ff	sound files/MIS/Brass/frenchhorn/Horn.ff.C4B4.aiff
+Trumpet	pp	sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.pp.C5B5.aiff
+Trumpet	mf	sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.mf.C5B5.aiff
+Trumpet	ff	sound files/MIS/Brass/Bbtrumpet/Trumpet.novib.ff.C5B5.aiff
+Trombone	pp	sound files/MIS/Brass/tenortrombone/TenorTrombone.pp.C3B3.aiff
+Trombone	mf	sound files/MIS/Brass/tenortrombone/TenorTrombone.mf.C3B3.aiff
+Tuba	pp	sound files/MIS/Brass/tuba/Tuba.pp.C2B2.aiff
+Tuba	mf	sound files/MIS/Brass/tuba/Tuba.mf.C2B2.aiff
+Tuba	ff	sound files/MIS/Brass/tuba/Tuba.ff.C2B2.aiff
+Flute	pp	sound files/MIS/Woodwinds/flute/Flute.nonvib.pp.B4Bb5.aiff
+Bass clarinet	pp	sound files/MIS/Woodwinds/bassclarinet/BassClarinet.pp.Db3B3.aiff
+Bass clarinet	ff	sound files/MIS/Woodwinds/bassclarinet/BassClarinet.ff.C3B3.aiff
+Bassoon	ff	sound files/MIS/Woodwinds/bassoon/Bassoon.ff.C3Bb3.aiff
