@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <string>
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -133,7 +134,7 @@ inline const std::array<Instrument, kInstrumentCount>& instruments() {
       {"Trumpet", Family::Brass, lips(0.5, 2500, 0.90, 1140, 400, 2), F::Valves, 52, 84, 116.54, 3, 2, 8, 0.3, 1.0, 0.01, 0, {{{1200, 1.0, 3.0}, {2600, 1.2, 2.0}}}, 1100},
       {"Flugelhorn", Family::Brass, lips(0.5, 1300, 0.92, 500, 200), F::Valves, 52, 82, 116.54, 3, 2, 8, 0.3, 1.0, 0.015, 0, {{{800, 1.0, 3.0}, {2000, 1.2, -4.0}}}, 1000},
       {"French horn", Family::Brass, lips(0.5, 1600, 0.95, 710, 350), F::Valves, 35, 77, 43.65, 3, 2, 16, 0.3, 1.0, 0.01, 0, {{{450, 1.0, 3.0}, {1800, 0.8, -8.0}}}, 900, 58.27, 61},
-      {"Trombone", Family::Brass, lips(0.5, 1800, 0.92, 670, 250), F::Slide, 34, 77, 58.27, 5, 1, 10, 0.3, 1.0, 0.01, 0, {{{600, 1.0, 3.0}, {1800, 1.2, 2.0}}}, 0},
+      {"Trombone", Family::Brass, lips(0.5, 1800, 0.92, 670, 150), F::Slide, 34, 77, 58.27, 5, 1, 10, 0.3, 1.0, 0.01, 0, {{{600, 1.0, 3.0}, {1800, 1.2, 2.0}}}, 0},
       {"Euphonium", Family::Brass, lips(0.5, 1100, 0.93, 300, 250), F::Valves, 29, 75, 58.27, 4, 1, 9, 0.3, 1.0, 0.01, 0, {{{400, 1.0, 3.0}, {1500, 1.0, -3.0}}}, 700},
       {"Tuba", Family::Brass, lips(0.5, 700, 0.94, 490, 250, 2), F::Valves, 26, 65, 29.14, 4, 1, 8, 0.3, 1.0, 0.012, 0, {{{220, 1.0, 3.0}, {900, 1.0, -3.0}}}, 500},
       {"Bugle", Family::Brass, lips(0.5, 2000, 0.90, 700, 350), F::Natural, 55, 79, 98.0, 0, 2, 8, 0.3, 1.0, 0.012, 0, {{{1100, 1.0, 3.0}, {2400, 1.2, 1.0}}}, 0},
@@ -489,8 +490,8 @@ struct Setup {
 // profiles of every recorded note (tools/fit/fitlp.cpp); the rest are their family's.
 inline const std::array<Dynamics, kInstrumentCount>& dynamics_table() {
   static const std::array<Dynamics, kInstrumentCount> table{{
-      {1.550, 9.4, 12.7, 0.94, 315.0, 2, 0.03},   // clarinet (fitted)
-      {0.000, 9.9, 11.8, 0.0, 0.0, 2, 0.05},   // bass clarinet (fitted)
+      {1.550, 9.4, 12.7, 0.94, 315.0, 2, 0.02},   // clarinet (fitted)
+      {0.000, 9.9, 11.8, 0.0, 0.0, 2, 0.03},   // bass clarinet (fitted)
       {0.300, 10.8, 18.0, 2.0, 635.0, 2, 0.01},  // soprano sax (fitted)
       {2.860, 16.0, 5.7, 3.1, 197.0, 2, 0.02},  // alto sax (fitted)
       {2.860, 16.0, 5.7, 3.1, 197.0, 2, 0.015},  // tenor sax (the alto's)
@@ -498,9 +499,9 @@ inline const std::array<Dynamics, kInstrumentCount>& dynamics_table() {
       {4.310, 8.5, 26.0, 1.2, 38.0, 2, 0.03},   // oboe (fitted)
       {1.600, 5.2, 33.0, 3.6, 21.1, 2, 0.07},   // bassoon (fitted)
       {0.000, 0.0, 0.0, 0.0, 0.0, 2, 0.07},    // Highland bagpipe: the bag's pressure is steady, no dynamics
-      {0.000, 24.0, 10.9, 3.0, 3.0, 2, 2.0},  // flute (fitted)
+      {0.000, 24.0, 10.9, 3.0, 3.0, 2, 1.2},  // flute (fitted)
       {3.000, 24.0, 10.9, 3.0, 3.0, 2, 1.5},  // piccolo (the flute's brightening; its narrow breath window needs the level law)
-      {0.322, 14.0, 13.2, 3.0, 3.0, 2, 1.5},  // alto flute (fitted)
+      {0.322, 14.0, 13.2, 3.0, 3.0, 2, 2.0},  // alto flute (fitted)
       {2.000, 12.0, 5.0, 3.0, 3.0, 2, 0.75},   // recorder (the flutes', with the narrower range a fipple allows)
       {2.000, 12.0, 5.0, 3.0, 3.0, 2, 0.75},   // tin whistle (as the recorder)
       {3.000, 24.0, 10.9, 3.0, 3.0, 2, 2.0},  // pan flute (the flute's brightening; its narrow breath window needs the level law)
@@ -520,6 +521,36 @@ inline const std::array<Dynamics, kInstrumentCount>& dynamics_table() {
   return table;
 }
 inline Dynamics dynamics_of(int instrument) { return dynamics_table()[static_cast<size_t>(std::clamp(instrument, 0, kInstrumentCount - 1))]; }
+
+// The radiated sound's response in absolute frequency, per instrument with recordings: the body,
+// the tone holes' lattice and the bell radiate some regions better than others, alike on every
+// note. Gains of a bank of peaking filters, a half octave apart from 125 Hz to 8 kHz (Q 1.4),
+// fitted to close the gap between every recorded note's harmonic profile and HONKR's
+// (tools/fit/fiteq.cpp). Instruments without recordings have none.
+constexpr int kBodyBands = 13;
+inline double body_band_hz(int k) { return 125.0 * std::exp2(k / 2.0); }
+inline bool g_body_eq_off = false;  // experiments (tools/fit): without the fitted response
+struct BodyEq { const char* name; std::array<double, kBodyBands> db; };
+inline const std::array<double, kBodyBands>* body_eq_of(int instrument) {
+  static const BodyEq table[] = {
+      {"Alto flute", {-1.7, -1.7, -0.3, 2.1, 0.8, 1.1, 0.3, 0.8, 0.8, 0.3, -0.8, -0.9, -0.9}},
+      {"Alto sax", {0.8, 0.3, 0, -0.8, 3, 0.3, -0.8, -0.3, 0.3, 1.9, 1.5, 1.1, 0.8}},
+      {"Bass clarinet", {1.9, 0.8, 0, -4, -4.8, -2.5, 0.8, 5, 5.8, 4.8, 3.6, 2.8, 2.5}},
+      {"Bassoon", {-0.2, -0.3, 0.8, 1.5, 0.8, -1.8, -0.8, 1.5, 1.2, 0.8, 0.3, 0, 0}},
+      {"Clarinet", {-0.8, -0.4, 0, 2, 0.3, 0.2, 0.3, -1.5, 2.1, 3.8, 3.3, 2.5, 2.1}},
+      {"Flute", {-1.2, -1.5, -2.2, -3.3, -4.7, -2.7, 1.8, 3, 1.4, -3.3, -3.2, -1.6, -0.9}},
+      {"French horn", {-1.8, -1.8, -1.6, 1.1, 3.8, 1.1, 0, 0.8, 1.8, -0.9, -2.7, -2.7, -2.4}},
+      {"Oboe", {2.1, 2.5, 3, 3.3, 3, -0.8, -3, 0.8, 0.8, -0.8, 0.8, -1.2, -3}},
+      {"Soprano sax", {-1.6, -1.9, -2.4, -2.7, -1.8, 1.5, -0.3, -2.2, -1.5, 0, 1.5, 0, -0.6}},
+      {"Trombone", {-4.2, 0, 0, -0.3, 0.6, 0, 0, -0.3, 0.3, 0.3, 0, 0, 0}},
+      {"Trumpet", {0, 0, 0.3, 0.5, 0.8, 0.8, 1.5, 3.3, 1.8, 0.8, 1.5, 0.8, 0.3}},
+      {"Tuba", {0.2, -3.2, -3.8, -0.3, 0.8, 0, -2.7, -3.3, -2.4, -1.7, -0.9, -0.6, -0.6}},
+  };
+  if (g_body_eq_off) return nullptr;
+  const char* name = instruments()[static_cast<size_t>(std::clamp(instrument, 0, kInstrumentCount - 1))].name;
+  for (const auto& e : table) if (std::string(e.name) == name) return &e.db;
+  return nullptr;
+}
 
 // The tempered pitch of a key under a setup's temperament, reference and fine tuning.
 struct HzOf {
@@ -663,6 +694,8 @@ class Section {
     float env = 0.0f;
     float click = 0.0f;
     Biquad body1, body2, mute1, mute2, hand, throat1, throat2, tilt, roll1, roll2, hiss;
+    std::array<Biquad, kBodyBands> eq; int eq_bands = 0;
+    float air = 0.0f;  // the jet's turbulence this sample, radiated past the body
     float noise_lp = 0.0f, click_bp1 = 0.0f, click_bp2 = 0.0f;
     uint64_t order = 0;
     int section_index = 0;
@@ -735,6 +768,10 @@ class Section {
     p.body1.set(Biquad::Type::Peak, b[0].hz, b[0].q, b[0].db, rate_);
     p.body2.set(Biquad::Type::Peak, b[1].hz, b[1].q, b[1].db, rate_);
     p.body1.reset(); p.body2.reset();
+    p.eq_bands = 0;
+    if (const auto* eq = body_eq_of(setup_.instrument))
+      for (int k = 0; k < kBodyBands; ++k)
+        if ((*eq)[static_cast<size_t>(k)] != 0.0) { auto& f = p.eq[static_cast<size_t>(p.eq_bands++)]; f.set(Biquad::Type::Peak, body_band_hz(k), 1.4, (*eq)[static_cast<size_t>(k)], rate_); f.reset(); }
     set_mute(p);
     p.hand.reset();
     p.throat1.reset(); p.throat2.reset();
@@ -911,11 +948,16 @@ class Section {
       if (hiss > 0.0) {
         if ((p.age & 63) == 1) p.hiss.set(Biquad::Type::LowPass, std::min(10.0 * p.fingered.hz, 0.45 * rate_), 0.707, 0.0, rate_);
         const double rel = std::max(pressure, 0.0) / loud_pressure();
-        out += p.hiss.process(static_cast<float>(hiss * setup_.breath_noise * rel * rel) * p.noise_lp);
+        const float air = p.hiss.process(static_cast<float>(hiss * setup_.breath_noise * rel * rel) * p.noise_lp);
+        // A jet's turbulence leaves from the embouchure straight into the room, past the body.
+        if (in_->family == Family::Flute) p.air = air; else out += air;
       }
     }
     // The body and bell, the mute or the hand, the throat.
     out = p.body2.process(p.body1.process(out));
+    for (int k = 0; k < p.eq_bands; ++k) out = p.eq[static_cast<size_t>(k)].process(out);
+    out += p.air;
+    p.air = 0.0f;
     if (in_->family == Family::Brass && in_->takes_mute) {
       // A mute put in or taken out mid-note changes the sound at once.
       if (p.mute != setup_.mute) set_mute(p);

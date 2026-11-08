@@ -115,6 +115,14 @@ class Biquad {
     b0_ = static_cast<float>(b0 / a0); b1_ = static_cast<float>(b1 / a0); b2_ = static_cast<float>(b2 / a0);
     a1_ = static_cast<float>(a1 / a0); a2_ = static_cast<float>(a2 / a0);
   }
+  // The magnitude response at a frequency, dB.
+  double response_db(double hz, double sample_rate) const {
+    const double w = kTau * hz / sample_rate;
+    const double c1 = std::cos(w), s1 = std::sin(w), c2 = std::cos(2 * w), s2 = std::sin(2 * w);
+    const double nr = b0_ + b1_ * c1 + b2_ * c2, ni = -(b1_ * s1 + b2_ * s2);
+    const double dr = 1.0 + a1_ * c1 + a2_ * c2, di = -(a1_ * s1 + a2_ * s2);
+    return 10.0 * std::log10((nr * nr + ni * ni) / std::max(dr * dr + di * di, 1e-30));
+  }
   float process(float in) {
     const float out = b0_ * in + b1_ * x1_ + b2_ * x2_ - a1_ * y1_ - a2_ * y2_;
     x2_ = x1_; x1_ = in; y2_ = y1_; y1_ = out;

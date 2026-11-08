@@ -48,7 +48,8 @@ int print_levels() {
     std::vector<float> l(57600), r(57600);
     engine.note_on(s, 0, levels::reference_key(inst), -1, 0.8);
     for (size_t b = 0; b < l.size() / kBlock; ++b) engine.render(s, l.data() + b * kBlock, r.data() + b * kBlock, kBlock);
-    const double peak = measure::db(measure::peak(Span(l))), rms = measure::db(measure::rms(Span(l, 14400, 38400)));
+    // The held tone's peak: a tongued attack above it is the limiter's to catch (docs/QUALITY.md).
+    const double peak = measure::db(measure::peak(Span(l, 14400, 38400))), rms = measure::db(measure::rms(Span(l, 14400, 38400)));
     std::printf("%-22s peak %6.1f dBFS  held rms %6.1f dBFS  trim still wanted %+5.1f dB\n", params::kInstrumentNames[inst], peak, rms, std::min(-16.0 - rms, -3.0 - peak));
   }
   return 0;

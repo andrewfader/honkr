@@ -103,7 +103,7 @@ shortened at its crests and lengthened at its troughs (Msallam et al. 2000), nev
 backwards (where a crest has caught its trough it is a shock and steepens no further), with
 four-point interpolation (a linear read's dull treble at a fractional delay muted the pianissimo
 that the steepening should leave alone). The amount is the bore's: 400 µs per unit of pressure
-for the trumpet, 250 for the trombone and tuba, 150 for the
+for the trumpet, 250 for the tuba, 150 for the trombone and the
 conical alphorn, none for the didgeridoo. The trumpet's spectral centroid rises by more than 40%
 from pianissimo to fortissimo with it and by less than 20% without it, while its pianissimo is
 unchanged (`horn_tests`).
@@ -133,7 +133,24 @@ stops reflecting and radiates) and the walls' loss. A bell radiates its low freq
 the radiated wave rises toward a corner of its own (a high-pass, one or two poles), fitted on the
 brass to the recordings' harmonic profiles. The tuba's is at 490 Hz with two poles, so at
 fortissimo its fundamental is 18 dB under the 4th and 5th harmonics, as recorded; the
-trombone's at 670 Hz, the horn's at 710, the trumpet's at 1140 with two. The body's colour is two peaking filters per instrument. Mutes are
+trombone's at 670 Hz, the horn's at 710, the trumpet's at 1140 with two. The body's colour is two
+peaking filters per instrument, set by ear.
+
+For the twelve instruments with recordings, the radiated sound then passes a response measured
+from them. The body, the tone holes' lattice and the bell favour some regions of absolute
+frequency over others, alike on every note, which no setting tied to the note's harmonics can
+express. A bank of thirteen peaking filters a half octave apart, from 125 Hz to 8 kHz (Q 1.4),
+has its gains fitted to every recorded note at once: the gains that best close the gap between
+HONKR's harmonic profiles and the recordings', with the harmonics' brightness and its growth from
+pianissimo to fortissimo in the same objective and a penalty on rough or large curves
+(`tools/fit/dumpprof.cpp`, `tools/fit/fiteq.cpp`; `body_eq_of` in `src/dsp/winds.hpp`). The
+clarinets' curves lift their upper harmonics against the fundamental's region; the brass curves
+lift the region around 300 Hz to 1 kHz and fall above. Against the recordings the profile error
+fell from 9.9 to 7.6 dB on the bass clarinet, 8.3 to 7.6 on the clarinet, 7.4 to 6.3 on the
+flute, 4.9 to 4.3 on the horn and 2.3 to 1.5 on the tuba, and the brightness error by half on the
+horn, the trombone and the tuba. Instruments without recordings have no measured response.
+
+Mutes are
 filters on what the brass radiates (straight: high-passed with a nasal peak near 1.8 kHz; cup:
 covered; Harmon: thin with a strong peak near 1.7 kHz; bucket: velvety) with their losses; the
 hand in a horn's bell, or a plunger, closes a low-pass from 8 kHz down to 700 Hz.
@@ -243,7 +260,8 @@ turbulence radiated straight from the embouchure, a reed's or the lips' through 
 amplitude goes as the pressure squared (turbulence's power grows steeply with the flow's speed),
 it is low-passed at the tenth harmonic, and its level is fitted per instrument to the recordings'
 noise between the harmonics (the `hiss` of `dynamics_table`); the Breath noise parameter scales
-both.
+both. A flute's is added after the body and its measured response, since a jet's turbulence leaves
+the embouchure straight into the room; a reed's or the lips' passes through them with the tone.
 
 A bend (the wheel, over the Bend range) is tuned as a fingered note at the bent pitch would be:
 the calibration's correction for the loop filters' delay and the reed's pull changes a few cents a

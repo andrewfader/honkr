@@ -37,33 +37,33 @@ struct Settings {
 // pressure than a reed does; the trims let a preset's Master be a musical choice.
 namespace levels {
 constexpr std::array<double, params::kInstrumentCount> kInstrumentDb{
-    -14.0,  // clarinet
-    -11.8,  // bass clarinet
-    -15.7,  // soprano sax
-    -13.4,  // alto sax
+    -15.6,  // clarinet
+    -9.9,  // bass clarinet
+    -12.8,  // soprano sax
+    -14.2,  // alto sax
     -13.4,  // tenor sax
     -13.3,  // baritone sax
-    -11.6,  // oboe
-    -21.6,  // bassoon
+    -12.5,  // oboe
+    -22.1,  // bassoon
     -14.2,  // highland bagpipe
-    -34.6,  // flute
+    -29.3,  // flute
     -32.9,  // piccolo
-    -35.4,  // alto flute
+    -37.7,  // alto flute
     -33.3,  // recorder
     -32.9,  // tin whistle
     -35.1,  // pan flute
     -33.5,  // shakuhachi
     -29.9,  // ocarina
-    +8.0,  // trumpet
+    +4.3,  // trumpet
     -3.7,  // flugelhorn
-    +0.7,  // french horn
-    -8.1,  // trombone
-    -5.5,  // euphonium
-    -10.5,  // tuba
+    -0.8,  // french horn
+    -4.7,  // trombone
+    -4.4,  // euphonium
+    -8.2,  // tuba
     -1.1,  // bugle
     -7.9,  // alphorn
     -2.6,  // shofar
-    -13.8,  // didgeridoo
+    -11.4,  // didgeridoo
 };
 inline double gain(int instrument) { return dsp::db_to_gain(kInstrumentDb[static_cast<size_t>(std::clamp(instrument, 0, params::kInstrumentCount - 1))]); }
 // The note each instrument is levelled on: the middle of its compass.

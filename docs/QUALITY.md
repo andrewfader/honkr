@@ -33,7 +33,8 @@ correlation, tail as the peak over the last 100 ms of the render.
 Presets are only comparable if the instruments behind them are. `build/honkr-preset-audit
 --levels` plays one C4 at a firm touch through every instrument with the default settings and
 master at 0 dB, and prints the peak, the held RMS and the trim each would still need to reach
--16 dBFS RMS held or -3 dBFS peak, whichever comes first. The trims live in `levels::` in
+-16 dBFS RMS held or a held peak of -3 dBFS, whichever comes first (a tongued attack above that is the
+limiter's to catch). The trims live in `levels::` in
 `src/engine.hpp` and are held by `engine_tests` (`every_instrument_plays_one_note_at_a_comparable_level`:
 held -22 to -10 dBFS RMS, peak under the ceiling). When a model's level changes, re-run
 `--levels` and move its trim, not the presets.
@@ -91,3 +92,11 @@ bassoon (8.0), 8.3 on the clarinet (10.0) and 9.9 on the bass clarinet (11.7), t
 from pianissimo to fortissimo from 0.56 to 0.19 octaves off. Accepted: the alto's dynamics error
 rose 0.3 dB, the bass clarinet's 0.9 and its noise 0.8. The advertised test of the instrument switch
 now leaves the fundamental out of its odd/even measure, as the recordings' measure does.
+The seventh measured each recorded instrument's radiated response in absolute frequency, a bank of
+half-octave filters fitted to every note (docs/PHYSICS.md): the profile error fell on all twelve
+(the bass clarinet's from 9.9 to 7.6 dB, the clarinet's from 8.3 to 7.6, the flute's from 7.4 to
+6.3, the horn's from 4.9 to 4.3, the tuba's from 2.3 to 1.5), the brightness error halved on the
+brass, and the flute's odd/even and brightening errors fell 1.0 dB and 0.06 octaves. Accepted: the
+bass clarinet's brightness error rose from 0.15 to 0.22 octaves, the flute's noise from 3.4 to 5.0
+dB, the horn's odd/even from 1.4 to 2.0. Instrument trims now aim the held tone's peak, not the
+attack's, at -3 dBFS: the limiter catches a tongued attack, as the bar above already allows.

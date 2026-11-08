@@ -1,15 +1,15 @@
 # HONKR's distance from the reference recordings, per instrument (tests/reference_match.hpp).
 # Written by `honkr-reference match --update-baseline`; reference_tests fails if any score gets worse.
 # instrument	notes	profile_db	brightness	odd_even_db	noise_db	dynamic_db	dynamic_bright
-Alto flute	36	7.849	0.2176	9.155	4.462	3.795	0.3786
-Alto sax	36	6.359	0.1415	5.821	5.580	1.653	0.1811
-Bass clarinet	36	9.877	0.1464	4.755	3.629	2.443	0.1943
-Bassoon	22	6.783	0.0938	3.017	3.273	1.374	0.1147
-Clarinet	36	8.309	0.1513	5.479	2.928	1.829	0.2091
-Flute	35	7.420	0.1760	8.221	3.436	3.409	0.3111
-French horn	36	4.932	0.1508	1.437	2.908	1.980	0.1890
-Oboe	30	9.449	0.2638	9.426	5.587	4.225	0.1995
-Soprano sax	36	6.326	0.1007	6.833	3.004	1.827	0.1251
-Trombone	24	5.851	0.2157	2.251	2.613	1.221	0.1111
-Trumpet	36	8.662	0.1437	2.769	3.881	1.034	0.1338
-Tuba	12	2.252	0.1299	1.141	4.863	0.000	0.0000
+Alto flute	36	7.786	0.2133	9.132	4.084	3.768	0.3718
+Alto sax	36	6.143	0.1338	5.315	5.487	1.559	0.1692
+Bass clarinet	36	7.607	0.2239	4.182	2.903	2.158	0.2016
+Bassoon	22	6.409	0.0896	2.816	3.223	1.517	0.1177
+Clarinet	36	7.581	0.1521	5.592	3.133	1.868	0.2042
+Flute	35	6.257	0.1266	7.212	5.042	3.346	0.2486
+French horn	36	4.272	0.0704	1.951	2.852	1.127	0.1423
+Oboe	30	9.213	0.2029	9.097	5.718	3.790	0.1876
+Soprano sax	36	6.046	0.0907	6.690	2.738	1.762	0.1201
+Trombone	24	5.731	0.0947	2.098	2.735	1.509	0.0932
+Trumpet	36	8.517	0.1239	2.238	3.917	0.852	0.1160
+Tuba	12	1.460	0.0636	1.173	4.919	0.000	0.0000
