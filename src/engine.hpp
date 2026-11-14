@@ -113,6 +113,9 @@ class Engine {
     limiter_.reset();
     bend_.fill(0.0); wheel_.fill(0.0); pressure_.fill(0.0); breath_cc_.fill(0.0); expression_.fill(0.0);
     seen_.fill(false);
+    // Each note's breath and section scatter are drawn from its count since the reset, so a host
+    // that resets before a bounce hears the same notes every time.
+    note_counter_ = 0;
     peak_l_ = peak_r_ = 0.0f;
     clipped_ = false;
     controller_smooth_.snap(0.0);
