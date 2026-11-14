@@ -36,6 +36,8 @@ enum ParamId : uint32_t {
   kRoomSize, kRoomAbsorption, kMicDistance, kHumidity, kTemperature, kMicPattern, kMicSetup,
   // --- presets ----------------------------------------------------------------------------------------------
   kPreset,
+  // --- appended: the section's low voices ---------------------------------------------------------------
+  kLowInstrument, kSplitKey,
   kParamCount
 };
 
@@ -94,6 +96,21 @@ constexpr const char* kRoomSizeNames[kRoomSizeCount] = {"Off", "Booth", "Bedroom
 constexpr std::array<double, kRoomSizeCount> kRoomVolumes{0.0, 10.0, 35.0, 150.0, 600.0, 3000.0, 12000.0};
 constexpr const char* kMicPatternNames[] = {"Omni", "Cardioid", "Figure-8"};
 constexpr const char* kMicSetupNames[] = {"Stereo pair", "Mono"};
+// A section's low voices: the keys below the split go to a second instrument (Off: none).
+constexpr const char* kLowInstrumentNames[kInstrumentCount + 1] = {
+    "Off", "Clarinet", "Bass clarinet", "Soprano sax", "Alto sax", "Tenor sax", "Baritone sax",
+    "Oboe", "Bassoon", "Highland bagpipe",
+    "Flute", "Piccolo", "Alto flute", "Recorder", "Tin whistle", "Pan flute", "Shakuhachi", "Ocarina",
+    "Trumpet", "Flugelhorn", "French horn", "Trombone", "Euphonium", "Tuba", "Bugle", "Alphorn", "Shofar", "Didgeridoo"};
+// The split: the lowest key the section's own instrument plays, C2 to C6 (middle C is C4).
+constexpr int kSplitLow = 36, kSplitHigh = 84;
+constexpr const char* kSplitKeyNames[kSplitHigh - kSplitLow + 1] = {
+    "C2", "C#2", "D2", "Eb2", "E2", "F2", "F#2", "G2", "G#2", "A2", "Bb2", "B2",
+    "C3", "C#3", "D3", "Eb3", "E3", "F3", "F#3", "G3", "G#3", "A3", "Bb3", "B3",
+    "C4", "C#4", "D4", "Eb4", "E4", "F4", "F#4", "G4", "G#4", "A4", "Bb4", "B4",
+    "C5", "C#5", "D5", "Eb5", "E5", "F5", "F#5", "G5", "G#5", "A5", "Bb5", "B5",
+    "C6",
+};
 constexpr int kPresetCount = 64;  // The names live in presets.hpp; the table only needs the size.
 
 constexpr std::array<ParamSpec, kParamCount> kSpecs{{
@@ -148,6 +165,9 @@ constexpr std::array<ParamSpec, kParamCount> kSpecs{{
     {"Mic setup", "Room", 0, 1, 0, true, Unit::Options, kMicSetupNames},
     // presets
     {"Preset", "Presets", 0, kPresetCount - 1, 0, true, Unit::Plain, nullptr},
+    // the section's low voices
+    {"Low instrument", "Section/Low voices", 0, kInstrumentCount, 0, true, Unit::Options, kLowInstrumentNames},
+    {"Split", "Section/Low voices", kSplitLow, kSplitHigh, 60, true, Unit::Options, kSplitKeyNames},
 }};
 
 // The preset parameter's value names come from the preset table, which lives above this header

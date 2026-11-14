@@ -30,9 +30,10 @@ inline std::vector<PageSpec> honkr_pages() {
        {{"Reed and embouchure", 0, {knob(kReed), knob(kEmbouchure), knob(kLipTension), knob(kLipping)}},
         {"Bell", 1, {menu(kMute, 2), knob(kHand), knob(kKeyNoise)}},
         {"Throat and drones", 2, {knob(kThroat), toggle(kDrones)}}}},
-      {"SECTION", "How many players, how together they are, and where they sit", theme::red, 3, 168,
+      {"SECTION", "How many players, how together they are, where they sit, and who takes the low notes", theme::red, 3, 168,
        {{"Players", 0, {knob(kPlayers), knob(kSpread), knob(kTiming)}},
-        {"Stereo", 1, {knob(kStereoWidth), knob(kPan)}}}},
+        {"Stereo", 1, {knob(kStereoWidth), knob(kPan)}},
+        {"Low voices", 2, {menu(kLowInstrument, 2), knob(kSplitKey)}}}},
       {"ROOM", "The room the players stand in, the air, and the microphones", theme::cyan, 3, 150,
        {{"Room", 0, {menu(kRoomSize, 2), knob(kRoomAbsorption), knob(kMicDistance)}},
         {"Microphones", 1, {menu(kMicPattern, 2), segments(kMicSetup, 2)}},
@@ -60,6 +61,7 @@ inline const char* honkr_short_name(int id) {
     case kMicDistance: return "Distance";
     case kMicPattern: return "Pattern";
     case kMicSetup: return "Setup";
+    case kLowInstrument: return "Instrument";
     default: return nullptr;
   }
 }

@@ -22,6 +22,8 @@ bool gui_param_relevant(const Plugin* p, clap_id id) {
     case kTemperamentRoot: return value(kTemperament) > 0.0;
     case kVibratoRate: case kVibratoDelay: return value(kVibrato) > 0.0;
     case kSpread: case kTiming: return value(kPlayers) > 1.0;
+    case kLowInstrument: return value(kPlayMode) >= 0.5;
+    case kSplitKey: return value(kPlayMode) >= 0.5 && value(kLowInstrument) >= 0.5;
     case kHand: case kMute: return true;
     case kRoomAbsorption: return value(kRoomSize) > 0.0;
     case kMicPattern: case kMicSetup: return value(kRoomSize) > 0.0 || value(kMicDistance) > 0.0;
@@ -74,6 +76,8 @@ const char* gui_help(clap_id id) {
     case kMicPattern: return "The microphones' pattern: omni hears the room all round, cardioid less of it, figure-8 the front and back.";
     case kMicSetup: return "A stereo pair, or one microphone in mono.";
     case kPreset: return "Factory presets: an instrument in a room, ready to play.";
+    case kLowInstrument: return "Section play: a second instrument for the keys below the split, as a section voices its low notes on trombones under the trumpets or a tenor and baritone under the altos. Off: every key on the one instrument.";
+    case kSplitKey: return "Section play with a low instrument: the lowest key the section's own instrument plays; every key below it goes to the low instrument.";
     default: return nullptr;
   }
 }

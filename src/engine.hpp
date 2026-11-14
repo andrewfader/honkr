@@ -241,6 +241,11 @@ class Engine {
     w.glide_ms = s[params::kGlide];
     w.bend_range = s[params::kBendRange];
     w.players = s.option(params::kPlayers);
+    // A section's low voices on a second instrument, levelled by its own trim against the
+    // section's (the engine trims the whole section by its own instrument's).
+    w.low_instrument = s.option(params::kLowInstrument) - 1;
+    w.split_key = s.option(params::kSplitKey);
+    if (w.low_instrument >= 0) w.low_trim = levels::gain(w.low_instrument) / levels::gain(w.instrument);
     w.spread_cents = s[params::kSpread];
     w.timing_ms = s[params::kTiming];
     w.breath = s[params::kBreath];

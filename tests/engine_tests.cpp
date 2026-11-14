@@ -7,6 +7,7 @@
 #include "audit_phrase.hpp"
 #include "spec.hpp"
 
+#include <string>
 #include <vector>
 
 using namespace honkr;
@@ -145,6 +146,64 @@ SCENARIO(every_instrument_plays_one_note_at_a_comparable_level) {
   }
   THEN("every one holds between -22 and -10 dBFS RMS and peaks under the ceiling");
   CHECK(all_ok, "instruments sit at one level");
+}
+
+// A brass section voices its low notes on trombones: a trumpet's bottom (E3) barely speaks, so
+// "Brass section, chords" gives every key below its split to trombones.
+SCENARIO(a_brass_section_voices_its_low_notes_on_trombones) {
+  GIVEN("the 'Brass section, chords' preset playing E3 G#3 B3 E4 at a firm touch, and the same with the low instrument Off");
+  size_t index = presets::count();
+  for (size_t p = 0; p < presets::count(); ++p) if (std::string(presets::all()[p].name) == "Brass section, chords") index = p;
+  CHECK(index < presets::count(), "the preset exists");
+  if (index >= presets::count()) return;
+  const int chord[] = {52, 56, 59, 64};
+  // keys: the chord or one key of it. low: 1 the preset as it is, 0 the low instrument Off, -1
+  // the trombones on their own (the section's instrument the trombone, no low instrument).
+  const auto play = [&](std::vector<int> keys, int low, Rig& rig) {
+    presets::apply(index, rig.s.v.data());
+    if (low <= 0) rig.s.v[params::kLowInstrument] = 0;
+    if (low < 0) rig.s.v[params::kInstrument] = params::kTrombone;
+    for (int k : keys) rig.on(k, 0.75);
+    rig.render(57600);
+  };
+  // The held level, 0.3 s to 1.0 s in, in dBFS RMS.
+  const auto held_db = [](const std::vector<float>& m) { return measure::db(measure::rms(Span(m, 14400, 33600))); };
+  Rig mixed;
+  play({chord[0], chord[1], chord[2], chord[3]}, 1, mixed);
+  const int split = static_cast<int>(mixed.s.v[params::kSplitKey]);
+  THEN("every key below the split is played by trombones and the others by trumpets, two players each");
+  int trombones = 0, trumpet_players = 0;
+  bool right = true;
+  for (int i = 0; i < dsp::winds::Section::kMaxPlayers; ++i) {
+    const auto v = mixed.engine.section().view(i);
+    if (!v.awake) continue;
+    const int want = v.key < split ? params::kTrombone : params::kTrumpet;
+    right = right && v.instrument == want;
+    (v.instrument == params::kTrombone ? trombones : trumpet_players) += 1;
+  }
+  CHECK(right && trombones == 6 && trumpet_players == 2, spec::fmt("%.0f trombone and %.0f trumpet players, the split at key %.0f", trombones, trumpet_players, split));
+  CHECK(finite(mixed.mono()) && measure::peak(Span(mixed.mono())) <= Limiter::kCeiling + 1e-4, "the chord is finite and under the ceiling");
+  THEN("each low note alone holds within 3 dB of the top note's level, where on the trumpets E3 is at least 8 dB under");
+  Rig top;
+  play({64}, 1, top);
+  const double top_db = held_db(top.mono());
+  bool comparable = true, trombone_sound = true;
+  double trumpet_e3 = 0.0;
+  for (int k : {52, 56, 59}) {
+    Rig with, without, alone;
+    play({k}, 1, with); play({k}, 0, without); play({k}, -1, alone);
+    const auto w = with.mono(), o = without.mono(), t = alone.mono();
+    std::printf("    key %d against E4: %+.1f dB with trombones, %+.1f dB on trumpets\n", k, held_db(w) - top_db, held_db(o) - top_db);
+    comparable = comparable && std::abs(held_db(w) - top_db) <= 3.0;
+    if (k == 52) trumpet_e3 = held_db(o) - top_db;
+    // The section's low note is the trombones' own note, level and colour.
+    const double cw = measure::spectral_centroid(Span(w, 14400, 16384), kRate, 13), ct = measure::spectral_centroid(Span(t, 14400, 16384), kRate, 13);
+    trombone_sound = trombone_sound && std::abs(held_db(w) - held_db(t)) <= 0.5 && std::abs(cw / ct - 1.0) <= 0.02;
+  }
+  CHECK(comparable, "the low notes sound with the top");
+  CHECK(trumpet_e3 < -8.0, spec::fmt("the trumpets' E3 alone is %.1f dB under E4 (the reason for the trombones)", trumpet_e3));
+  THEN("each low note is what the trombones play on their own: the same level within 0.5 dB and spectral centroid within 2%");
+  CHECK(trombone_sound, "the low notes are trombones");
 }
 
 SCENARIO(every_preset_meets_the_quality_bar) {

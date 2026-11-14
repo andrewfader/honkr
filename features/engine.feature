@@ -31,6 +31,13 @@ Feature: The engine plays one instrument (or a section) from the keys, breath an
     Given one note in the middle of every instrument's compass at a firm breath, master at 0 dB, 1.2 s of it
     Then every one holds between -22 and -10 dBFS RMS and peaks under the ceiling
 
+  # a_brass_section_voices_its_low_notes_on_trombones
+  Scenario: A brass section voices its low notes on trombones
+    Given the 'Brass section, chords' preset playing E3 G#3 B3 E4 at a firm touch, and the same with the low instrument Off
+    Then every key below the split is played by trombones and the others by trumpets, two players each
+    Then each low note alone holds within 3 dB of the top note's level, where on the trumpets E3 is at least 8 dB under
+    And each low note is what the trombones play on their own: the same level within 0.5 dB and spectral centroid within 2%
+
   # every_preset_meets_the_quality_bar
   Scenario: Every preset meets the quality bar
     Given each factory preset played the audit phrase: a held note (a chord for a section), then three melody notes

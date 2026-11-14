@@ -74,6 +74,8 @@ Feature: Every parameter does what it advertises
       | Timing          | C4, three players 30 cents apart          | 0 ms      | 60 ms         | the latest player's entry after the first           | under 10 ms, then 25 to 70 ms              |
       | Stereo width    | C4, three players                         | 0%        | 100%          | L/R correlation                                     | 1, then at least 0.1 less                  |
       | Pan             | the alto's C4                             | L 50      | R 50          | right over left                                     | -7.66 dB, then +7.66 dB (equal power) +- 0.3 |
+      | Low instrument  | a trumpet section's C3, in Section play   | Off       | Trombone      | C3 against the C4 above it                          | under -30 dB (folded up), then at least 30 dB more |
+      | Split           | trumpets over trombones, D3               | C3        | C4            | D3 against the D4 above it                          | under -30 dB (trumpets), then at least 30 dB more (trombones) |
 
     Examples: the room and the air
       | parameter       | context                                   | low       | high          | measurement                                         | expected                                   |

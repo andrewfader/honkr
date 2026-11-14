@@ -661,6 +661,20 @@ std::array<Proof, P::kParamCount> proofs() {
     const double ca = lr_correlation(a), cb = lr_correlation(b);
     return verdict(ca <= 0.95 && cb >= 0.999, "L/R correlation %.3f (stereo pair) -> %.3f (mono) (expected under 0.95, then 1)", ca, cb);
   });
+  // --- the section's low voices ---------------------------------------------------------------------
+  // A trumpet section playing C3, below the trumpet's compass: alone it sounds the note an octave
+  // up, inside the trumpet; with trombones as the low instrument, C3 itself sounds.
+  set(kLowInstrument, ctx(kTrumpet, {still, {kPlayMode, 1}}, 48), 0, kTrombone + 1, [](const Render& a, const Render& b) {
+    const double ra = tone_db(held(a), g_note_hz) - tone_db(held(a), 2.0 * g_note_hz), rb = tone_db(held(b), g_note_hz) - tone_db(held(b), 2.0 * g_note_hz);
+    return verdict(ra < -30.0 && rb > ra + 30.0, "C3 against C4: %.1f dB (Off: the trumpets fold it up) -> %.1f dB (trombones) (expected under -30, then at least 30 dB more)", ra, rb);
+  });
+  // A trumpet section with trombones below the split, playing D3: with the split at C3 the trumpets
+  // take it (an octave up, inside their compass); at C4 the trombones play D3 itself.
+  set(kSplitKey, ctx(kTrumpet, {still, {kPlayMode, 1}, {kLowInstrument, kTrombone + 1}}, 50), 48, 60, [](const Render& a, const Render& b) {
+    const double ra = tone_db(held(a), g_note_hz) - tone_db(held(a), 2.0 * g_note_hz), rb = tone_db(held(b), g_note_hz) - tone_db(held(b), 2.0 * g_note_hz);
+    return verdict(ra < -30.0 && rb > ra + 30.0, "D3 against D4: %.1f dB (split C3: the trumpets) -> %.1f dB (split C4: the trombones) (expected under -30, then at least 30 dB more)", ra, rb);
+  });
+
   // "Oboe, orchestral" to "Oboe, baroque": the same oboe at A = 415, 101.6 cents lower on A4.
   set(kPreset, ctx(kAltoSax, {}, 69), 11, 12, PitchCents(1200.0 * std::log2(415.0 / 440.0), 4.0));
   return t;

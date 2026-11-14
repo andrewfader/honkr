@@ -26,7 +26,7 @@ inline const std::vector<Preset>& all() {
       {"Baritone sax", {{kInstrument, kBaritoneSax}, {kReed, 0.6}, {kRoomSize, 3}, {kMicDistance, 1.0}, {kMasterDb, -7.4}}},
       {"Soprano sax, hall", {{kInstrument, kSopranoSax}, {kVibrato, 10}, {kRoomSize, 5}, {kMicDistance, 3.0}, {kMasterDb, -8.5}}},
       {"Bebop alto", {{kInstrument, kAltoSax}, {kTongue, 0.75}, {kAttack, 12}, {kVibrato, 8}, {kVibratoDelay, 600}, {kRoomSize, 4}, {kMicDistance, 0.8}, {kMasterDb, -5.7}}},
-      {"Sax section, chords", {{kInstrument, kAltoSax}, {kPlayMode, 1}, {kStereoWidth, 0.9}, {kRoomSize, 4}, {kMicDistance, 2.5}, {kMasterDb, -10.6}}},
+      {"Sax section, chords", {{kInstrument, kAltoSax}, {kPlayMode, 1}, {kLowInstrument, kTenorSax + 1}, {kSplitKey, 55}, {kStereoWidth, 0.9}, {kRoomSize, 4}, {kMicDistance, 2.5}, {kMasterDb, -10.6}}},
       {"Clarinet, chamber", {{kInstrument, kClarinet}, {kVibrato, 0}, {kRoomSize, 5}, {kMicDistance, 2.5}, {kMasterDb, -2.5}}},
       {"Klezmer clarinet", {{kInstrument, kClarinet}, {kVibrato, 25}, {kVibratoRate, 6.5}, {kVibratoDelay, 150}, {kGlide, 60}, {kBreath, 1.08}, {kRoomSize, 3}, {kMicDistance, 1.2}, {kMasterDb, -9.7}}},
       {"Dixieland clarinet", {{kInstrument, kClarinet}, {kVibrato, 32}, {kVibratoRate, 6.2}, {kVibratoDelay, 80}, {kTongue, 0.7}, {kRoomSize, 4}, {kMicDistance, 1.5}, {kMasterDb, -5.0}}},
@@ -76,7 +76,7 @@ inline const std::vector<Preset>& all() {
       {"Didgeridoo, wah", {{kInstrument, kDidgeridoo}, {kVibrato, 0}, {kThroat, 0.8}, {kGrowl, 0.2}, {kAttack, 60}, {kRoomSize, 2}, {kMicDistance, 1.0}, {kMasterDb, -5.1}}},
       {"Trumpet, natural intonation", {{kInstrument, kTrumpet}, {kLipping, 0.0}, {kVibrato, 0}, {kRoomSize, 4}, {kMicDistance, 2.0}, {kMasterDb, -14.9}}},
       // --- sections -----------------------------------------------------------------------------------
-      {"Brass section, chords", {{kInstrument, kTrumpet}, {kPlayMode, 1}, {kPlayers, 2}, {kStereoWidth, 0.9}, {kRoomSize, 4}, {kMicDistance, 3.0}, {kMasterDb, -16.8}}},
+      {"Brass section, chords", {{kInstrument, kTrumpet}, {kPlayMode, 1}, {kPlayers, 2}, {kLowInstrument, kTrombone + 1}, {kSplitKey, 60}, {kStereoWidth, 0.9}, {kRoomSize, 4}, {kMicDistance, 3.0}, {kMasterDb, -16.8}}},
       {"Big band trumpets", {{kInstrument, kTrumpet}, {kPlayers, 4}, {kSpread, 10}, {kVibrato, 8}, {kRoomSize, 4}, {kMicDistance, 3.0}, {kMasterDb, -16.3}}},
       {"Trombone choir", {{kInstrument, kTrombone}, {kPlayMode, 1}, {kVibrato, 4}, {kRoomSize, 6}, {kMicDistance, 5.0}, {kMasterDb, -9.2}}},
       {"Low brass, chords", {{kInstrument, kTuba}, {kPlayMode, 1}, {kPlayers, 2}, {kRoomSize, 5}, {kMicDistance, 4.0}, {kMasterDb, -8.2}}},

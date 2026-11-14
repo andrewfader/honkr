@@ -459,6 +459,9 @@ struct Setup {
   double glide_ms = 0.0;
   double bend_range = 2.0;    // semitones
   int players = 1;
+  int low_instrument = -1;    // a section's keys below the split played on this instrument (-1: none)
+  int split_key = 60;         // the lowest key the section's own instrument plays when there is one
+  double low_trim = 1.0;      // the low instrument's level trim against the section's instrument's
   double spread_cents = 8.0;  // the section's tuning spread
   double timing_ms = 15.0;    // and its ragged entries
   double breath = 1.0;        // the player's pressure against the instrument's
@@ -644,16 +647,17 @@ class Section {
   // The pitch a player is sounding on a key, for tests: the fingering after lipping.
   Fingered fingering_for(int key) const { return finger(*in_, fold(key + setup_.transpose), setup_.a4, setup_.lipping, hz_of()); }
   // A note beyond the instrument's compass sounds an octave (or more) inside it.
-  int fold(int key) const {
-    while (key < in_->low) key += 12;
-    while (key > in_->high) key -= 12;
+  int fold(int key) const { return fold(*in_, key); }
+  static int fold(const Instrument& in, int key) {
+    while (key < in.low) key += 12;
+    while (key > in.high) key -= 12;
     return key;
   }
   // Read-only views for the editor and tests.
-  struct View { bool awake; int key; double pressure; int partial; int valve_mask; double opening; };
+  struct View { bool awake; int key; double pressure; int partial; int valve_mask; double opening; int instrument; };
   View view(int i) const {
     const auto& p = players_[static_cast<size_t>(std::clamp(i, 0, kMaxPlayers - 1))];
-    return {p.awake, p.key, p.pressure, p.fingered.partial, p.fingered.valve_mask, p.horn.opening()};
+    return {p.awake, p.key, p.pressure, p.fingered.partial, p.fingered.valve_mask, p.horn.opening(), p.instrument};
   }
 
   void render(float& left, float& right) {
@@ -663,8 +667,8 @@ class Section {
     for (auto& p : players_) {
       if (!p.awake) continue;
       const float out = tick(p, vib_base, vib_lfo);
-      left += out * p.gain_l;
-      right += out * p.gain_r;
+      left += out * p.gain_l * p.trim;
+      right += out * p.gain_r * p.trim;
     }
     if (in_->fingering == Fingering::Chanter) render_drones(left, right);
     left *= static_cast<float>(kOutputScale); right *= static_cast<float>(kOutputScale);
@@ -675,6 +679,11 @@ class Section {
  private:
   struct Player {
     horn::Horn horn;
+    // The instrument this player holds (a section can be two: see instrument_for), and its level
+    // against the section's own instrument, whose trim the engine applies to the whole section.
+    const Instrument* in = &instruments()[0];
+    int instrument = 0;
+    float trim = 1.0f;
     bool awake = false, held = false;
     int key = -1;
     double velocity = 0.7;
@@ -716,12 +725,12 @@ class Section {
   }
   // The mouth's pressure for a breath level: silence at none, the instrument's pianissimo to
   // fortissimo above.
-  double soft_pressure() const { return soft_of(*in_) * setup_.breath; }
-  double loud_pressure() const { return loud_of(*in_) * setup_.breath; }
-  double pressure_for(double b) const {
-    const double soft = soft_pressure() / setup_.breath, loud = loud_pressure() / setup_.breath;
-    const double p = b < 0.15 ? soft * b / 0.15 : lerp(soft, loud, (b - 0.15) / 0.85);
-    return p * setup_.breath;
+  double soft_pressure(const Player& p) const { return soft_of(*p.in) * setup_.breath; }
+  double loud_pressure(const Player& p) const { return loud_of(*p.in) * setup_.breath; }
+  double pressure_for(const Player& p, double b) const {
+    const double soft = soft_pressure(p) / setup_.breath, loud = loud_pressure(p) / setup_.breath;
+    const double pressure = b < 0.15 ? soft * b / 0.15 : lerp(soft, loud, (b - 0.15) / 0.85);
+    return pressure * setup_.breath;
   }
 
   Player* free_player() {
@@ -734,8 +743,16 @@ class Section {
     return best;
   }
 
+  // Which instrument plays a key: in a section, the keys below the split go to the low
+  // instrument when there is one (trombones under the trumpets, a tenor under the altos).
+  int instrument_for(int key) const {
+    if (setup_.solo || setup_.low_instrument < 0 || setup_.low_instrument >= kInstrumentCount) return setup_.instrument;
+    return key < setup_.split_key ? setup_.low_instrument : setup_.instrument;
+  }
+
   void start_note(int key, double velocity) {
     const int n = std::clamp(setup_.players, 1, 4);
+    const int which = instrument_for(key);
     if (setup_.solo) for (auto& p : players_) if (p.awake) p.held = false;
     for (int i = 0; i < n; ++i) {
       Player* p = free_player();
@@ -754,7 +771,10 @@ class Section {
       const double angle = (pan * 0.5 + 0.5) * kPi * 0.5;
       p->gain_l = static_cast<float>(std::cos(angle) * std::sqrt(2.0) / std::sqrt(static_cast<double>(n)));
       p->gain_r = static_cast<float>(std::sin(angle) * std::sqrt(2.0) / std::sqrt(static_cast<double>(n)));
-      p->horn.set_acoustics(in_->acoustics);
+      p->in = &instrument(which);
+      p->instrument = which;
+      p->trim = which == setup_.instrument ? 1.0f : static_cast<float>(setup_.low_trim);
+      p->horn.set_acoustics(p->in->acoustics);
       set_voicing(*p);
       retarget(*p, key, true);
       p->vibrato_phase = 0.0;
@@ -764,12 +784,12 @@ class Section {
 
   // The filters that colour what a player radiates: the body, a mute or the hand, the throat.
   void set_voicing(Player& p) {
-    const auto& b = in_->body;
+    const auto& b = p.in->body;
     p.body1.set(Biquad::Type::Peak, b[0].hz, b[0].q, b[0].db, rate_);
     p.body2.set(Biquad::Type::Peak, b[1].hz, b[1].q, b[1].db, rate_);
     p.body1.reset(); p.body2.reset();
     p.eq_bands = 0;
-    if (const auto* eq = body_eq_of(setup_.instrument))
+    if (const auto* eq = body_eq_of(p.instrument))
       for (int k = 0; k < kBodyBands; ++k)
         if ((*eq)[static_cast<size_t>(k)] != 0.0) { auto& f = p.eq[static_cast<size_t>(p.eq_bands++)]; f.set(Biquad::Type::Peak, body_band_hz(k), 1.4, (*eq)[static_cast<size_t>(k)], rate_); f.reset(); }
     set_mute(p);
@@ -779,7 +799,7 @@ class Section {
   }
   void set_mute(Player& p) const {
     p.mute = setup_.mute;
-    const Mute m = in_->family == Family::Brass && in_->takes_mute ? static_cast<Mute>(std::clamp(setup_.mute, 0, kMuteCount - 1)) : Mute::Open;
+    const Mute m = p.in->family == Family::Brass && p.in->takes_mute ? static_cast<Mute>(std::clamp(setup_.mute, 0, kMuteCount - 1)) : Mute::Open;
     switch (m) {
       case Mute::Straight: p.mute1.set(Biquad::Type::HighPass, 350.0, 0.7, 0.0, rate_); p.mute2.set(Biquad::Type::Peak, 1800.0, 1.5, 8.0, rate_); break;
       case Mute::Cup: p.mute1.set(Biquad::Type::LowPass, 1400.0, 0.7, 0.0, rate_); p.mute2.set(Biquad::Type::Peak, 700.0, 1.0, 4.0, rate_); break;
@@ -804,32 +824,32 @@ class Section {
     const bool changed = p.key != key;
     p.key = key;
     const Fingered before = p.fingered;
-    p.fingered = finger(*in_, fold(key + setup_.transpose), setup_.a4, setup_.lipping, hz_of());
+    p.fingered = finger(*p.in, fold(*p.in, key + setup_.transpose), setup_.a4, setup_.lipping, hz_of());
     const double hz = p.fingered.hz * p.detune;
     const int partial = p.fingered.partial;
     p.lip_target = hz * lip_ratio(partial) * cents_ratio(setup_.lip_cents);
     p.lip_q = lip_q(partial, hz);
-    p.jet_ratio = in_->acoustics.jet_ratio * lerp(1.12, 0.88, std::clamp(setup_.embouchure, 0.0, 1.0));
-    p.bore_target = nominal_bore(*in_, rate_, hz, partial) * cal_->correction(setup_.instrument, hz, partial);
-    p.vessel_hz = hz * cal_->correction(setup_.instrument, hz);
+    p.jet_ratio = p.in->acoustics.jet_ratio * lerp(1.12, 0.88, std::clamp(setup_.embouchure, 0.0, 1.0));
+    p.bore_target = nominal_bore(*p.in, rate_, hz, partial) * cal_->correction(p.instrument, hz, partial);
+    p.vessel_hz = hz * cal_->correction(p.instrument, hz);
     if (first) {
       p.bore = p.bore_target; p.lip_hz = p.lip_target; p.bore_step = 0.0;
-      if (in_->acoustics.mouth == Mouth::Lips) p.horn.set_valve(p.lip_hz, p.lip_q);
+      if (p.in->acoustics.mouth == Mouth::Lips) p.horn.set_valve(p.lip_hz, p.lip_q);
       p.horn.set_vessel(p.vessel_hz);
     } else {
       double mechanism_ms = 6.0;
-      if (in_->fingering == Fingering::Valves) mechanism_ms = 10.0;
-      if (in_->fingering == Fingering::Slide) mechanism_ms = 45.0;
-      if (in_->fingering == Fingering::Chanter) mechanism_ms = 3.0;
+      if (p.in->fingering == Fingering::Valves) mechanism_ms = 10.0;
+      if (p.in->fingering == Fingering::Slide) mechanism_ms = 45.0;
+      if (p.in->fingering == Fingering::Chanter) mechanism_ms = 3.0;
       const double ms = std::max(setup_.glide_ms, mechanism_ms);
       p.bore_step = (p.bore_target - p.bore) / std::max(1.0, ms * 0.001 * rate_);
       p.since_change = 0;
       p.horn.set_vessel(p.vessel_hz);
       // The keys or valves clack as they move.
-      const bool moved = changed && (in_->fingering == Fingering::Keys || in_->fingering == Fingering::Valves || in_->fingering == Fingering::Chanter);
-      if (moved && (in_->fingering != Fingering::Valves || before.valve_mask != p.fingered.valve_mask)) p.click = 1.0f;
+      const bool moved = changed && (p.in->fingering == Fingering::Keys || p.in->fingering == Fingering::Valves || p.in->fingering == Fingering::Chanter);
+      if (moved && (p.in->fingering != Fingering::Valves || before.valve_mask != p.fingered.valve_mask)) p.click = 1.0f;
     }
-    if (first && (in_->fingering == Fingering::Keys || in_->fingering == Fingering::Valves)) p.click = 0.6f;
+    if (first && (p.in->fingering == Fingering::Keys || p.in->fingering == Fingering::Valves)) p.click = 0.6f;
   }
 
   void silence(Player& p) {
@@ -858,14 +878,14 @@ class Section {
     // The breath: the tongue lets the pressure behind it go (an overshoot), the lungs hold it,
     // and on release it falls away.
     const double level = breath_level(p) * p.breath_scale;
-    double target = p.held ? pressure_for(level) : 0.0;
-    const bool chanter = in_->fingering == Fingering::Chanter;
+    double target = p.held ? pressure_for(p, level) : 0.0;
+    const bool chanter = p.in->fingering == Fingering::Chanter;
     const double tongue = chanter ? 0.0 : std::clamp(setup_.tongue, 0.0, 1.0);
     const double age_s = p.age / rate_;
     // (A jet overshoots less: a flautist's tongue releases air, not a reed or the lips.)
-    if (p.held) target *= 1.0 + (in_->family == Family::Flute ? 0.12 : 0.35) * tongue * std::exp(-age_s / 0.03);
+    if (p.held) target *= 1.0 + (p.in->family == Family::Flute ? 0.12 : 0.35) * tongue * std::exp(-age_s / 0.03);
     // A reed pressed past its closing pressure chokes: the player never blows that hard.
-    if (in_->acoustics.mouth == Mouth::Reed) target = std::min(target, loud_of(*in_) * 1.06 * setup_.breath);
+    if (p.in->acoustics.mouth == Mouth::Reed) target = std::min(target, loud_of(*p.in) * 1.06 * setup_.breath);
     const double tau_ms = p.held ? std::max(1.0, setup_.attack_ms) / 3.0 : std::max(1.0, setup_.release_ms) / 3.0;
     p.pressure += (target - p.pressure) * (1.0 - std::exp(-1.0 / (tau_ms * 0.001 * rate_)));
     // Vibrato: after its delay, fading in over a quarter second; the jaw or lips bend the pitch,
@@ -874,7 +894,7 @@ class Section {
     p.vibrato_phase += setup_.vibrato_hz / rate_;
     if (p.vibrato_phase >= 1.0) p.vibrato_phase -= 1.0;
     const double vib = std::sin(kTau * p.vibrato_phase) * onset * vib_base;
-    const bool flute = in_->family == Family::Flute;
+    const bool flute = p.in->family == Family::Flute;
     const double pitch_cents = flute ? 0.3 * vib : vib;
     double pressure = p.pressure * (flute ? 1.0 + 0.012 * vib : 1.0);
     // Growl or flutter-tongue: the throat or tongue rattling at 25 to 35 Hz.
@@ -893,36 +913,36 @@ class Section {
       const double hz = p.fingered.hz * p.detune;
       if (bend != p.bend_seen || hz != p.bend_hz_seen) {
         p.bend_seen = bend; p.bend_hz_seen = hz;
-        p.bend_factor = bend == 1.0 ? 1.0 : cal_->correction(setup_.instrument, hz * bend, p.fingered.partial) / cal_->correction(setup_.instrument, hz, p.fingered.partial);
+        p.bend_factor = bend == 1.0 ? 1.0 : cal_->correction(p.instrument, hz * bend, p.fingered.partial) / cal_->correction(p.instrument, hz, p.fingered.partial);
       }
     }
     horn::Tuning t;
     t.bore = p.bore / pitch * p.bend_factor;
-    t.jet = p.jet_ratio * t.bore * (in_->acoustics.bore == Bore::Stopped ? 2.0 : (in_->acoustics.bore == Bore::Brass ? 1.0 / std::max(1, p.fingered.partial) : 1.0));
-    if (in_->acoustics.mouth == Mouth::Vessel) t.jet = p.jet_ratio * rate_ / (p.fingered.hz * p.detune * pitch);
+    t.jet = p.jet_ratio * t.bore * (p.in->acoustics.bore == Bore::Stopped ? 2.0 : (p.in->acoustics.bore == Bore::Brass ? 1.0 / std::max(1, p.fingered.partial) : 1.0));
+    if (p.in->acoustics.mouth == Mouth::Vessel) t.jet = p.jet_ratio * rate_ / (p.fingered.hz * p.detune * pitch);
     // A flautist blowing harder brings the lips closer to the edge, so the jet's travel (which
     // the harder jet would otherwise shorten, sharpening the note toward its octave) stays a
     // constant share of the period across the dynamic: as Fletcher measured, players keep the
     // jet's travel time near the period's whatever the pressure.
-    if (in_->acoustics.mouth == Mouth::Jet) {
-      const double mid = 0.5 * (soft_of(*in_) + loud_of(*in_));
+    if (p.in->acoustics.mouth == Mouth::Jet) {
+      const double mid = 0.5 * (soft_of(*p.in) + loud_of(*p.in));
       t.jet *= std::pow(std::max(pressure, 0.02) / mid, 0.25);
     }
-    if (in_->acoustics.mouth == Mouth::Lips && (p.age & 15) == 0) p.horn.set_valve(p.lip_hz * pitch, p.lip_q);
-    if (in_->acoustics.mouth == Mouth::Vessel && pitch != 1.0 && (p.age & 15) == 0) p.horn.set_vessel(p.vessel_hz * pitch * p.bend_factor);
+    if (p.in->acoustics.mouth == Mouth::Lips && (p.age & 15) == 0) p.horn.set_valve(p.lip_hz * pitch, p.lip_q);
+    if (p.in->acoustics.mouth == Mouth::Vessel && pitch != 1.0 && (p.age & 15) == 0) p.horn.set_vessel(p.vessel_hz * pitch * p.bend_factor);
     if ((p.age & 15) == 1) apply_embouchure(p);
     // The breath's turbulence, more at the tongue's release.
     const double tongue_burst = tongue * std::exp(-age_s / 0.012);
     const float white = rng_.bipolar();
     p.noise_lp += 0.6f * (white - p.noise_lp);
-    const float noise = static_cast<float>((in_->noise * setup_.breath_noise * (1.0 + 2.0 * setup_.growl) + 0.15 * tongue_burst) * std::max(pressure, 0.0)) * p.noise_lp;
+    const float noise = static_cast<float>((p.in->noise * setup_.breath_noise * (1.0 + 2.0 * setup_.growl) + 0.15 * tongue_burst) * std::max(pressure, 0.0)) * p.noise_lp;
     float out = p.horn.tick(t, static_cast<float>(std::max(pressure, 0.0)), noise);
     {
       // The dynamic's level and treble beyond the loop's own (see Dynamics).
-      const Dynamics dyn = dynamics_of(setup_.instrument);
+      const Dynamics dyn = dynamics_of(p.instrument);
       const double k = g_dyn_k >= 0.0 ? g_dyn_k : dyn.level_exponent, tilt = g_dyn_tilt >= 0.0 ? g_dyn_tilt : dyn.tilt_db;
       const double treble = g_dyn_treble > -99.0 ? g_dyn_treble : dyn.treble_db;
-      if (k > 0.0) out *= static_cast<float>(std::pow(std::max(pressure, 1e-4) / loud_pressure(), k));
+      if (k > 0.0) out *= static_cast<float>(std::pow(std::max(pressure, 1e-4) / loud_pressure(p), k));
       if (tilt != 0.0 || treble != 0.0) {
         if ((p.age & 63) == 1) p.tilt.set(Biquad::Type::HighShelf, std::min(1.5 * p.fingered.hz, 0.4 * rate_), 0.7, treble - tilt * (1.0 - dynamic(p)), rate_);
         out = p.tilt.process(out);
@@ -947,10 +967,10 @@ class Section {
       const double hiss = g_hiss >= 0.0 ? g_hiss : dyn.hiss;
       if (hiss > 0.0) {
         if ((p.age & 63) == 1) p.hiss.set(Biquad::Type::LowPass, std::min(10.0 * p.fingered.hz, 0.45 * rate_), 0.707, 0.0, rate_);
-        const double rel = std::max(pressure, 0.0) / loud_pressure();
+        const double rel = std::max(pressure, 0.0) / loud_pressure(p);
         const float air = p.hiss.process(static_cast<float>(hiss * setup_.breath_noise * rel * rel) * p.noise_lp);
         // A jet's turbulence leaves from the embouchure straight into the room, past the body.
-        if (in_->family == Family::Flute) p.air = air; else out += air;
+        if (p.in->family == Family::Flute) p.air = air; else out += air;
       }
     }
     // The body and bell, the mute or the hand, the throat.
@@ -958,7 +978,7 @@ class Section {
     for (int k = 0; k < p.eq_bands; ++k) out = p.eq[static_cast<size_t>(k)].process(out);
     out += p.air;
     p.air = 0.0f;
-    if (in_->family == Family::Brass && in_->takes_mute) {
+    if (p.in->family == Family::Brass && p.in->takes_mute) {
       // A mute put in or taken out mid-note changes the sound at once.
       if (p.mute != setup_.mute) set_mute(p);
       out = p.mute2.process(p.mute1.process(out)) * static_cast<float>(mute_gain(static_cast<Mute>(std::clamp(setup_.mute, 0, kMuteCount - 1))));
@@ -967,14 +987,14 @@ class Section {
         out = p.hand.process(out);
       }
     }
-    if (setup_.instrument == kDidgeridoo) {
+    if (p.instrument == kDidgeridoo) {
       if ((p.age & 63) == 1) set_throat(p);
       out = p.throat2.process(p.throat1.process(out));
     }
     // The key pads' or valves' click.
-    if (p.click > 1e-4f && in_->click_hz > 0.0) {
+    if (p.click > 1e-4f && p.in->click_hz > 0.0) {
       const float c = rng_.bipolar() * p.click * static_cast<float>(setup_.key_noise * 0.05);
-      const float w = static_cast<float>(kTau * in_->click_hz / rate_);
+      const float w = static_cast<float>(kTau * p.in->click_hz / rate_);
       p.click_bp1 += w * (c - p.click_bp1);
       p.click_bp2 += w * (p.click_bp1 - p.click_bp2);
       out += (p.click_bp1 - p.click_bp2) * 6.0f;
@@ -989,13 +1009,13 @@ class Section {
   // The embouchure for this note: a reed's stiffness, a jet's aim, a valve's opening.
   // Where the note sits between the instrument's pianissimo and fortissimo, 0..1.
   double dynamic(const Player& p) const {
-    const double soft = soft_pressure(), loud = loud_pressure();
+    const double soft = soft_pressure(p), loud = loud_pressure(p);
     return std::clamp((p.pressure - soft) / std::max(loud - soft, 1e-6), 0.0, 1.0);
   }
   void apply_embouchure(Player& p) {
     const double e = std::clamp(setup_.embouchure, 0.0, 1.0);
     const double d = dynamic(p);
-    const auto& a = in_->acoustics;
+    const auto& a = p.in->acoustics;
     switch (a.mouth) {
       case Mouth::Reed:
         // (On a cylinder the player's lip also closes the reed down for a pianissimo, to a third
