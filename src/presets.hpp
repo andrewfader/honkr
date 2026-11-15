@@ -55,7 +55,7 @@ inline const std::vector<Preset>& all() {
       {"Trumpet, Harmon mute", {{kInstrument, kTrumpet}, {kMute, 3}, {kVibrato, 0}, {kRoomSize, 4}, {kMicDistance, 0.6}, {kMasterDb, -7.0}}},
       {"Trumpet, straight mute", {{kInstrument, kTrumpet}, {kMute, 1}, {kVibrato, 6}, {kRoomSize, 3}, {kMicDistance, 1.0}, {kMasterDb, -9.3}}},
       {"Trumpet, plunger", {{kInstrument, kTrumpet}, {kHand, 0.6}, {kGrowl, 0.15}, {kRoomSize, 4}, {kMicDistance, 1.0}, {kMasterDb, -11.0}}},
-      {"Lead trumpet, screaming", {{kInstrument, kTrumpet}, {kBreath, 1.25}, {kLipTension, 12}, {kTongue, 0.9}, {kVibrato, 10}, {kRoomSize, 4}, {kMicDistance, 2.0}, {kMasterDb, -11.0}}},
+      {"Lead trumpet, screaming", {{kInstrument, kTrumpet}, {kBreath, 1.25}, {kLipTension, 12}, {kTongue, 0.9}, {kVibrato, 10}, {kRoomSize, 4}, {kMicDistance, 2.0}, {kMasterDb, -16.0}}},
       {"Trumpet, cup mute", {{kInstrument, kTrumpet}, {kMute, 2}, {kVibrato, 5}, {kRoomSize, 3}, {kMicDistance, 1.0}, {kMasterDb, -3.8}}},
       {"Flugelhorn", {{kInstrument, kFlugelhorn}, {kVibrato, 10}, {kRoomSize, 4}, {kMicDistance, 1.5}, {kMasterDb, -9.0}}},
       {"French horn", {{kInstrument, kFrenchHorn}, {kHand, 0.3}, {kVibrato, 0}, {kRoomSize, 5}, {kMicDistance, 4.0}, {kMasterDb, -12.5}}},

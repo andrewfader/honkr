@@ -69,6 +69,7 @@ struct Acoustics {
   double jet_ratio = 0.93;    // jet: travel time across the mouth against the period
   double jet_drive = 0.9;     // jet: how far the mouth's flow bends it
   double jet_offset = 0.8;    // jet: where it rests against the edge (off-centre: even harmonics)
+  double jet_offset_dynamic = 0.0;  // jet: how far the player moves that offset from pianissimo to fortissimo, in octaves
   double bell_hz = 2000.0;    // the bell's (or tone-hole lattice's) cutoff: above it the bore stops reflecting
   double loss = 0.95;         // the bore's reflection at low frequencies (walls and radiation)
   double radiate_hz = 300.0;  // radiation from the bell rises below this corner

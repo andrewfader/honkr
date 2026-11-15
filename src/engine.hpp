@@ -46,18 +46,18 @@ constexpr std::array<double, params::kInstrumentCount> kInstrumentDb{
     -12.5,  // oboe
     -22.1,  // bassoon
     -14.2,  // highland bagpipe
-    -29.3,  // flute
+    -28.8,  // flute
     -32.9,  // piccolo
-    -37.7,  // alto flute
+    -37.6,  // alto flute
     -33.3,  // recorder
     -32.9,  // tin whistle
     -35.1,  // pan flute
     -33.5,  // shakuhachi
     -29.9,  // ocarina
-    +4.3,  // trumpet
+    +1.8,  // trumpet
     -3.7,  // flugelhorn
-    -0.8,  // french horn
-    -4.7,  // trombone
+    +1.5,  // french horn
+    -3.9,  // trombone
     -4.4,  // euphonium
     -8.2,  // tuba
     -1.1,  // bugle

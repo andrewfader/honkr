@@ -98,8 +98,8 @@ inline horn::Acoustics lips(double zeta, double bell_hz, double loss, double rad
   horn::Acoustics a; a.mouth = Mouth::Lips; a.bore = Bore::Brass; a.zeta = zeta; a.valve_q = 30.0; a.lip_gain = 3.0; a.steepening_us = steepening_us;
   a.bell_hz = bell_hz; a.loss = loss; a.radiate_hz = radiate_hz; a.radiate_poles = radiate_poles; return a;
 }
-inline horn::Acoustics jet(Bore bore, double ratio, double drive, double offset, double bell_hz, double loss) {
-  horn::Acoustics a; a.mouth = Mouth::Jet; a.bore = bore; a.jet_ratio = ratio; a.jet_drive = drive; a.jet_offset = offset;
+inline horn::Acoustics jet(Bore bore, double ratio, double drive, double offset, double bell_hz, double loss, double offset_dynamic = 0.0) {
+  horn::Acoustics a; a.mouth = Mouth::Jet; a.bore = bore; a.jet_ratio = ratio; a.jet_drive = drive; a.jet_offset = offset; a.jet_offset_dynamic = offset_dynamic;
   a.bell_hz = bell_hz; a.loss = loss; a.radiate_hz = 150.0; return a;
 }
 inline horn::Acoustics vessel(double q) {
@@ -122,19 +122,19 @@ inline const std::array<Instrument, kInstrumentCount>& instruments() {
       {"Bassoon", Family::Woodwind, modal_reed(0.192, 1800, 67.5, 30, 1.02, 747, 1.0, 417, 2), F::Keys, 34, 75, 0, 0, 0, 0, 0.66, 0.82, 0.02, 0, {{{480, 2.0, 7.0}, {1200, 2.0, 4.0}}}, 500},
       {"Highland bagpipe", Family::Woodwind, cone_reed(0.26, 0.35, 5000, 0.95), F::Chanter, 67, 81, 0, 0, 0, 0, 0.8, 0.95, 0.01, 0, {{{1300, 2.0, 6.0}, {3000, 2.0, 4.0}}}, 1500},
       // --- flutes --------------------------------------------------------------------------------------
-      {"Flute", Family::Flute, jet(Bore::Open, 0.93, 0.9, 0.8, 14000, 0.85), F::Keys, 60, 90, 0, 0, 0, 0, 0.4, 1.8, 0.06, 0, {{{1000, 1.0, 0.0}, {3000, 1.0, 0.0}}}, 2000},
+      {"Flute", Family::Flute, jet(Bore::Open, 0.93, 0.9, 0.8, 14000, 0.85, 1.09), F::Keys, 60, 90, 0, 0, 0, 0, 0.4, 1.8, 0.06, 0, {{{1000, 1.0, 0.0}, {3000, 1.0, 0.0}}}, 2000},
       {"Piccolo", Family::Flute, jet(Bore::Open, 0.93, 0.9, 0.8, 20000, 0.85), F::Keys, 74, 98, 0, 0, 0, 0, 0.8, 1.04, 0.05, 0, {{{2500, 1.0, 0.0}, {5000, 1.0, 0.0}}}, 2800},
-      {"Alto flute", Family::Flute, jet(Bore::Open, 0.93, 0.9, 0.8, 9000, 0.85), F::Keys, 59, 86, 0, 0, 0, 0, 0.4, 1.8, 0.08, 0, {{{700, 1.0, 1.0}, {2000, 1.0, -2.0}}}, 1500},
+      {"Alto flute", Family::Flute, jet(Bore::Open, 0.93, 0.9, 0.8, 9000, 0.85, 1.08), F::Keys, 59, 86, 0, 0, 0, 0, 0.4, 1.8, 0.08, 0, {{{700, 1.0, 1.0}, {2000, 1.0, -2.0}}}, 1500},
       {"Recorder", Family::Flute, jet(Bore::Open, 0.93, 1.0, 0.5, 14000, 0.85), F::Keys, 65, 91, 0, 0, 0, 0, 0.78, 1.02, 0.03, 0, {{{1500, 1.0, 2.0}, {3500, 1.0, 0.0}}}, 0},
       {"Tin whistle", Family::Flute, jet(Bore::Open, 0.93, 1.0, 0.6, 16000, 0.85), F::Keys, 74, 96, 0, 0, 0, 0, 0.78, 1.02, 0.04, 0, {{{2500, 1.0, 2.0}, {5000, 1.0, 0.0}}}, 0},
       {"Pan flute", Family::Flute, jet(Bore::Stopped, 0.93, 0.9, 0.5, 10000, 0.88), F::Keys, 55, 91, 0, 0, 0, 0, 0.85, 1.12, 0.09, 0, {{{1000, 1.0, 0.0}, {3000, 1.0, 0.0}}}, 0},
       {"Shakuhachi", Family::Flute, jet(Bore::Open, 0.93, 0.9, 0.9, 9000, 0.85), F::Keys, 62, 86, 0, 0, 0, 0, 0.8, 1.04, 0.16, 0, {{{900, 1.0, 1.0}, {2500, 1.0, 0.0}}}, 0},
       {"Ocarina", Family::Flute, vessel(80.0), F::Keys, 69, 89, 0, 0, 0, 0, 0.92, 1.1, 0.04, 0, {{{1000, 1.0, 0.0}, {3000, 1.0, 0.0}}}, 0},
       // --- brass ---------------------------------------------------------------------------------------
-      {"Trumpet", Family::Brass, lips(0.5, 2500, 0.90, 1140, 400, 2), F::Valves, 52, 84, 116.54, 3, 2, 8, 0.3, 1.0, 0.01, 0, {{{1200, 1.0, 3.0}, {2600, 1.2, 2.0}}}, 1100},
+      {"Trumpet", Family::Brass, lips(0.5, 2500, 0.90, 970, 400, 2), F::Valves, 52, 84, 116.54, 3, 2, 8, 0.326, 0.751, 0.01, 0, {{{1200, 1.0, 3.0}, {2600, 1.2, 2.0}}}, 1100},
       {"Flugelhorn", Family::Brass, lips(0.5, 1300, 0.92, 500, 200), F::Valves, 52, 82, 116.54, 3, 2, 8, 0.3, 1.0, 0.015, 0, {{{800, 1.0, 3.0}, {2000, 1.2, -4.0}}}, 1000},
-      {"French horn", Family::Brass, lips(0.5, 1600, 0.95, 710, 350), F::Valves, 35, 77, 43.65, 3, 2, 16, 0.3, 1.0, 0.01, 0, {{{450, 1.0, 3.0}, {1800, 0.8, -8.0}}}, 900, 58.27, 61},
-      {"Trombone", Family::Brass, lips(0.5, 1800, 0.92, 670, 150), F::Slide, 34, 77, 58.27, 5, 1, 10, 0.3, 1.0, 0.01, 0, {{{600, 1.0, 3.0}, {1800, 1.2, 2.0}}}, 0},
+      {"French horn", Family::Brass, lips(0.5, 1600, 0.95, 794, 350), F::Valves, 35, 77, 43.65, 3, 2, 16, 0.275, 0.875, 0.01, 0, {{{450, 1.0, 3.0}, {1800, 0.8, -8.0}}}, 900, 58.27, 61},
+      {"Trombone", Family::Brass, lips(0.5, 1800, 0.92, 670, 150), F::Slide, 34, 77, 58.27, 5, 1, 10, 0.269, 0.944, 0.01, 0, {{{600, 1.0, 3.0}, {1800, 1.2, 2.0}}}, 0},
       {"Euphonium", Family::Brass, lips(0.5, 1100, 0.93, 300, 250), F::Valves, 29, 75, 58.27, 4, 1, 9, 0.3, 1.0, 0.01, 0, {{{400, 1.0, 3.0}, {1500, 1.0, -3.0}}}, 700},
       {"Tuba", Family::Brass, lips(0.5, 700, 0.94, 490, 250, 2), F::Valves, 26, 65, 29.14, 4, 1, 8, 0.3, 1.0, 0.012, 0, {{{220, 1.0, 3.0}, {900, 1.0, -3.0}}}, 500},
       {"Bugle", Family::Brass, lips(0.5, 2000, 0.90, 700, 350), F::Natural, 55, 79, 98.0, 0, 2, 8, 0.3, 1.0, 0.012, 0, {{{1100, 1.0, 3.0}, {2400, 1.2, 1.0}}}, 0},
@@ -502,18 +502,18 @@ inline const std::array<Dynamics, kInstrumentCount>& dynamics_table() {
       {4.310, 8.5, 26.0, 1.2, 38.0, 2, 0.03},   // oboe (fitted)
       {1.600, 5.2, 33.0, 3.6, 21.1, 2, 0.07},   // bassoon (fitted)
       {0.000, 0.0, 0.0, 0.0, 0.0, 2, 0.07},    // Highland bagpipe: the bag's pressure is steady, no dynamics
-      {0.000, 24.0, 10.9, 3.0, 3.0, 2, 1.2},  // flute (fitted)
+      {0.000, 17.8, 7.65, 3.0, 3.0, 2, 1.18},  // flute (fitted)
       {3.000, 24.0, 10.9, 3.0, 3.0, 2, 1.5},  // piccolo (the flute's brightening; its narrow breath window needs the level law)
-      {0.322, 14.0, 13.2, 3.0, 3.0, 2, 2.0},  // alto flute (fitted)
+      {0.322, 15.1, 13.2, 3.0, 3.0, 2, 2.17},  // alto flute (fitted)
       {2.000, 12.0, 5.0, 3.0, 3.0, 2, 0.75},   // recorder (the flutes', with the narrower range a fipple allows)
       {2.000, 12.0, 5.0, 3.0, 3.0, 2, 0.75},   // tin whistle (as the recorder)
       {3.000, 24.0, 10.9, 3.0, 3.0, 2, 2.0},  // pan flute (the flute's brightening; its narrow breath window needs the level law)
       {3.000, 24.0, 10.9, 3.0, 3.0, 2, 3.0},  // shakuhachi (the flute's brightening; its narrow breath window needs the level law)
       {2.000, 10.0, 0.0, 0.0, 0.0, 2, 0.5},   // ocarina (its breath window is narrow: the level carries the dynamic)
-      {0.000, 0.0, -3.0, 2.4, 2.7, 2, 0.008},    // trumpet (fitted)
+      {0.000, 0.0, -2.9, 3.23, 6.82, 4, 0.008},  // trumpet (fitted; four poles: the pianissimo's harmonics fall away geometrically)
       {0.000, 0.0, -3.0, 2.4, 2.7, 2, 0.01},    // flugelhorn (the trumpet's)
-      {0.170, 9.6, 1.5, 2.7, 7.1, 4, 0.025},   // French horn (fitted)
-      {1.050, 6.2, 3.3, 7.1, 68.0, 4, 0.02},    // trombone (fitted)
+      {0.208, 10.1, 1.0, 2.7, 7.83, 4, 0.025},   // French horn (fitted)
+      {0.863, 4.2, 3.3, 6.08, 37.5, 4, 0.02},    // trombone (fitted)
       {1.050, 6.2, 3.3, 7.1, 68.0, 4, 0.03},    // euphonium (the trombone's)
       {0.000, 24.0, 21.3, 8.0, 8.0, 2, 0.14},    // tuba (fitted at fortissimo, the only dynamic recorded; its pianissimo treble set to the trombone's)
       {0.000, 0.0, -3.0, 2.4, 2.7, 2, 0.01},    // bugle (the trumpet's)
@@ -694,6 +694,7 @@ class Section {
     double vessel_hz = 440.0;
     double jet_ratio = 0.93;
     double pressure = 0.0;      // the mouth's pressure, rising and falling
+    double lp_dynamic = 0.0;    // where the held note sat between pianissimo and fortissimo, for its low-pass
     double detune = 1.0;        // this player's tuning in the section
     double breath_scale = 1.0;
     int delay = 0;              // samples before this player comes in
@@ -856,6 +857,7 @@ class Section {
     p.awake = p.held = false;
     p.key = -1;
     p.pressure = 0.0;
+    p.lp_dynamic = 0.0;
     p.horn.reset();
     p.env = 0.0f; p.click = 0.0f; p.age = 0; p.since_change = 1 << 20;
     p.noise_lp = p.click_bp1 = p.click_bp2 = 0.0f;
@@ -951,7 +953,10 @@ class Section {
       if (lp_pp > 0.0) {
         // Fitted to the steady tone only: the tongue's burst opens it while it lasts.
         if ((p.age & 15) == 1) {
-          const double harmonic = lp_pp * std::pow(lp_ff / lp_pp, dynamic(p)) * (1.0 + 20.0 * tongue_burst);
+          // Fitted to the held tone: once the key is let go it stays where the note was held,
+          // so the release's fall is the breath's, as the Release parameter promises.
+          if (p.held) p.lp_dynamic = dynamic(p);
+          const double harmonic = lp_pp * std::pow(lp_ff / lp_pp, p.lp_dynamic) * (1.0 + 20.0 * tongue_burst);
           const double hz = std::min(harmonic * p.fingered.hz, 0.45 * rate_);
           p.roll1.set(Biquad::Type::LowPass, hz, 0.707, 0.0, rate_);
           p.roll2.set(Biquad::Type::LowPass, hz, 0.707, 0.0, rate_);
@@ -1027,7 +1032,9 @@ class Section {
         break;
       // Loose lips open wider and pass more air; a firm embouchure narrows the aperture.
       case Mouth::Lips: p.horn.set_zeta(a.zeta * std::exp2(1.0 * (0.5 - e))); break;
-      default: p.horn.set_jet_offset(a.jet_offset * lerp(0.4, 1.6, e)); break;
+      // A flautist's lips move the jet across the edge with the breath, within the reach the
+      // embouchure has (its offset at the firmest embouchure).
+      default: p.horn.set_jet_offset(std::min(a.jet_offset * lerp(0.4, 1.6, e) * std::exp2(a.jet_offset_dynamic * (d - 0.5)), 1.6 * a.jet_offset)); break;
     }
   }
 

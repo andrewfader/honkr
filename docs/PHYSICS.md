@@ -133,7 +133,7 @@ stops reflecting and radiates) and the walls' loss. A bell radiates its low freq
 the radiated wave rises toward a corner of its own (a high-pass, one or two poles), fitted on the
 brass to the recordings' harmonic profiles. The tuba's is at 490 Hz with two poles, so at
 fortissimo its fundamental is 18 dB under the 4th and 5th harmonics, as recorded; the
-trombone's at 670 Hz, the horn's at 710, the trumpet's at 1140 with two. The body's colour is two
+trombone's at 670 Hz, the horn's at 790, the trumpet's at 970 with two. The body's colour is two
 peaking filters per instrument, set by ear.
 
 For the twelve instruments with recordings, the radiated sound then passes a response measured
@@ -214,6 +214,18 @@ grew duller. What players actually do, and what HONKR now does:
 - **The jet's offset from the edge grows with the jet.** Held fixed, a hard-blown jet saturates
   symmetrically and turns odd-harmonic; in proportion to the jet, a fortissimo keeps the even
   harmonics a flute has.
+- **A flautist moves the jet across the edge as the breath rises.** The recordings' flutes grow
+  more even-harmonic from pianissimo to fortissimo (the flute's odd/even balance falls from -6 dB
+  at pp to -8 at ff, the alto flute's from +2 to -7), where a jet held at one offset grew 10 to
+  12 dB more odd. Players roll the flute and shape the lips with the dynamic (Fletcher and Rossing ch. 16;
+  Coltman), and the jet's offset is what sets the even harmonics, so the offset moves too: by
+  `jet_offset_dynamic` octaves from pianissimo to fortissimo about its middle, 1.09 octaves on the
+  flute and 1.08 on the alto flute, fitted to the recordings (more than about 1.5 and the jet
+  stops speaking at its extremes). The swing toward odd harmonics falls to about 3.5 dB (it does
+  not yet turn toward even, as the recordings do); the flute's odd/even error fell from 7.2 to 5.8
+  dB and the alto flute's from 9.1 to 7.7, their profiles by 0.3 dB. The other flutes have no
+  recording and keep a fixed offset (`engine_tests` holds the flute's D5 and the alto flute's G4
+  to a fortissimo less than 6 dB more odd-harmonic than their pianissimo).
 
 Those are physics. Three more laws are **fitted to the recordings**, not derived, because the
 loops' saturation is a property of these minimal models rather than of the instruments: the
@@ -226,9 +238,23 @@ slaps shut on every cycle however softly it is blown, so its tone is as buzzy ju
 threshold as at fortissimo (a rest opening was tried: the lips then either buzz as before or
 fall into a chaotic regime), and the flutes' jet sounds its upper harmonics 15 to 20 dB too
 strong. It is fitted to every recorded note's harmonic profile (the trumpet's and flutes' is a
-fixed 3 harmonics, the trumpet's 2.4 to 2.7; the horn's opens from 2.7 to 7, the trombone's from
-7 to beyond the tenth, the clarinet's from 1.5 to 30) and opens while
-the tongue's burst lasts, since only the steady tone was fitted. The level and shelf are fitted
+fixed 3 harmonics; the trumpet's opens from 3.2 to 6.8 harmonics with four poles, the horn's
+from 2.7 to 7.8, the trombone's from 6.1 to 37, the clarinet's from 1.5 to 30). On the brass it
+is four-pole because a soft brass note's harmonics fall away geometrically (the recordings'
+pianissimo trumpet: 3rd harmonic -15 dB, 4th -31, 5th -42, 6th -50), which a two-pole slope
+cannot follow; with it, and the breath's range and bell corners refitted alongside (trumpet
+0.33 to 0.75 of the mouth's pressure and a 970 Hz corner, horn 0.28 to 0.88 and 790 Hz,
+trombone 0.27 to 0.94), the trumpet's profile error fell from 8.5 to 6.2 dB, the trombone's
+from 5.7 to 5.3 and the horn's from 4.3 to 4.2 (`engine_tests` holds the trumpet's pianissimo E5
+to a 5th harmonic more than 28 dB under its strongest, where it stood 26 dB under before; the
+recordings' stands 41 under, so most of the gap remains). The trumpet's fit held, as constraints,
+the checks the suite makes of it: the tongue's attack burst at least 6 dB over an untongued
+attack above 3 kHz (`advertised_tests`), and a C5's harmonic near 8 kHz above -60 dB for the air
+to absorb (`air_tests`): a fit to the recordings alone had taken the breath's top down to 0.70 and
+the fortissimo low-pass to 4.6 harmonics, which broke both) and opens while
+the tongue's burst lasts, since only the steady tone was fitted; once the key is released it stays
+where the held note had it, so the release's fall is the breath's own (the four-pole trumpet
+darkening as its breath died had shortened a 1.6 s release's 40 dB fall by a tenth). The level and shelf are fitted
 per instrument (`dynamics_table` in `src/dsp/winds.hpp`) at one note
 in the middle of each recorded octave, to the recordings' gain from pp to ff and their brightness
 at pp and at ff; instruments without a recording take their family's. The brass laws and bell

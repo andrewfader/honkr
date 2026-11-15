@@ -6,6 +6,7 @@
 #include "audio_measure.hpp"
 #include "audit_phrase.hpp"
 #include "spec.hpp"
+#include "timbre.hpp"
 
 #include <string>
 #include <vector>
@@ -127,6 +128,38 @@ SCENARIO(a_harder_breath_is_brighter) {
   }
   THEN("each fortissimo's spectrum reaches well higher than its pianissimo");
   CHECK(all_ok, "brighter when blown harder");
+}
+
+namespace {
+// One held note as the reference recordings are measured (tests/timbre.hpp, references/README.md):
+// the instrument's defaults without vibrato, 1.6 s held, its steady middle half analysed.
+timbre::Features held_note(int instrument, int key, double velocity) {
+  Rig rig;
+  rig.s.v[params::kInstrument] = instrument; rig.s.v[params::kVibrato] = 0; rig.s.v[params::kMasterDb] = -12;
+  rig.on(key, velocity); rig.render(static_cast<uint32_t>(1.6 * kRate));
+  return timbre::analyse(rig.mono(), kRate, 0, static_cast<size_t>(1.6 * kRate), 440.0 * std::exp2((key - 69) / 12.0));
+}
+}  // namespace
+
+SCENARIO(a_flute_keeps_its_even_harmonics_as_it_is_blown_harder) {
+  GIVEN("the flute's D5 and the alto flute's G4, each held at a pianissimo and at a fortissimo touch");
+  bool all_ok = true;
+  for (int inst : {params::kFlute, params::kAltoFlute}) {
+    const int key = inst == params::kFlute ? 74 : 67;
+    const double soft = held_note(inst, key, 0.2).odd_even_db, loud = held_note(inst, key, 0.95).odd_even_db;
+    std::printf("    %s: odd over even %.1f dB soft, %.1f dB loud\n", params::kInstrumentNames[inst], soft, loud);
+    if (!(loud - soft < 6.0)) all_ok = false;
+  }
+  THEN("the fortissimo is less than 6 dB more odd-harmonic than the pianissimo (the recordings grow, if anything, more even): the player moves the jet across the edge as the breath rises, where a jet at one offset turned 10 to 12 dB more odd");
+  CHECK(all_ok, "the even harmonics hold up at fortissimo");
+}
+
+SCENARIO(a_soft_trumpet_is_nearly_pure_above_its_lowest_harmonics) {
+  GIVEN("the trumpet's E5 held at a pianissimo and at a fortissimo touch");
+  const double soft = held_note(params::kTrumpet, 76, 0.2).profile[4], loud = held_note(params::kTrumpet, 76, 0.95).profile[4];
+  THEN("the pianissimo's 5th harmonic lies more than 28 dB under its strongest (the recordings' 41), and the fortissimo's at least 6 dB nearer it: a soft brass note's harmonics fall away quickly");
+  CHECK(soft < -28.0, spec::fmt("pianissimo 5th harmonic %.1f dB under the strongest", -soft));
+  CHECK(loud > soft + 6.0, spec::fmt("fortissimo 5th harmonic %.1f dB under the strongest", -loud));
 }
 
 SCENARIO(every_instrument_plays_one_note_at_a_comparable_level) {

@@ -26,6 +26,16 @@ Feature: The engine plays one instrument (or a section) from the keys, breath an
     Given a held clarinet note without vibrato, then the mod wheel full up, then the bend wheel full up
     Then the wheel swings the pitch by tens of cents; the bend raises it by the bend range, two semitones
 
+  # a_flute_keeps_its_even_harmonics_as_it_is_blown_harder
+  Scenario: A flute keeps its even harmonics as it is blown harder
+    Given the flute's D5 and the alto flute's G4, each held at a pianissimo and at a fortissimo touch
+    Then the fortissimo is less than 6 dB more odd-harmonic than the pianissimo: the player moves the jet across the edge as the breath rises
+
+  # a_soft_trumpet_is_nearly_pure_above_its_lowest_harmonics
+  Scenario: A soft trumpet is nearly pure above its lowest harmonics
+    Given the trumpet's E5 held at a pianissimo and at a fortissimo touch
+    Then the pianissimo's 5th harmonic lies more than 28 dB under its strongest, and the fortissimo's at least 6 dB nearer it
+
   # every_instrument_plays_one_note_at_a_comparable_level
   Scenario: Every instrument plays one note at a comparable level
     Given one note in the middle of every instrument's compass at a firm breath, master at 0 dB, 1.2 s of it
