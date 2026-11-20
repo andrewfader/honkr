@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(HONKR VERSION 0.2.1 LANGUAGES CXX)
+project(HONKR VERSION 0.2.2 LANGUAGES CXX)
 
 # Keep windows.h from defining the min/max macros no matter which header pulls it in.
 add_compile_definitions($<$<CXX_COMPILER_ID:MSVC>:NOMINMAX>)
