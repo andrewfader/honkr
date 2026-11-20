@@ -66,8 +66,8 @@ inline const std::vector<Preset>& all() {
       {"Trombone, bucket mute", {{kInstrument, kTrombone}, {kMute, 4}, {kVibrato, 4}, {kRoomSize, 4}, {kMicDistance, 1.2}, {kMasterDb, -2.9}}},
       {"Jazz trombone, plunger", {{kInstrument, kTrombone}, {kHand, 0.5}, {kGrowl, 0.2}, {kGlide, 60}, {kRoomSize, 4}, {kMicDistance, 1.0}, {kMasterDb, -7.9}}},
       {"Euphonium", {{kInstrument, kEuphonium}, {kVibrato, 12}, {kRoomSize, 5}, {kMicDistance, 3.0}, {kMasterDb, -7.3}}},
-      {"Tuba", {{kInstrument, kTuba}, {kVibrato, 0}, {kRoomSize, 5}, {kMicDistance, 3.0}, {kMasterDb, -7.8}}},
-      {"Oompah tuba", {{kInstrument, kTuba}, {kAttack, 8}, {kRelease, 40}, {kTongue, 0.9}, {kVibrato, 0}, {kRoomSize, 4}, {kMicDistance, 2.0}, {kMasterDb, -8.5}}},
+      {"Tuba", {{kInstrument, kTuba}, {kVibrato, 0}, {kRoomSize, 5}, {kMicDistance, 3.0}, {kMasterDb, -3.4}}},
+      {"Oompah tuba", {{kInstrument, kTuba}, {kAttack, 8}, {kRelease, 40}, {kTongue, 0.9}, {kVibrato, 0}, {kRoomSize, 4}, {kMicDistance, 2.0}, {kMasterDb, -4.8}}},
       {"Bugle call", {{kInstrument, kBugle}, {kVibrato, 0}, {kTongue, 0.8}, {kMicDistance, 10.0}, {kMasterDb, -6.6}}},
       {"Alphorn", {{kInstrument, kAlphorn}, {kVibrato, 0}, {kMicDistance, 12.0}, {kMasterDb, -3.4}}},
       {"Alphorn, its own fa", {{kInstrument, kAlphorn}, {kLipping, 0.0}, {kVibrato, 0}, {kMicDistance, 12.0}, {kMasterDb, -3.4}}},
@@ -79,7 +79,7 @@ inline const std::vector<Preset>& all() {
       {"Brass section, chords", {{kInstrument, kTrumpet}, {kPlayMode, 1}, {kPlayers, 2}, {kLowInstrument, kTrombone + 1}, {kSplitKey, 60}, {kStereoWidth, 0.9}, {kRoomSize, 4}, {kMicDistance, 3.0}, {kMasterDb, -16.8}}},
       {"Big band trumpets", {{kInstrument, kTrumpet}, {kPlayers, 4}, {kSpread, 10}, {kVibrato, 8}, {kRoomSize, 4}, {kMicDistance, 3.0}, {kMasterDb, -16.3}}},
       {"Trombone choir", {{kInstrument, kTrombone}, {kPlayMode, 1}, {kVibrato, 4}, {kRoomSize, 6}, {kMicDistance, 5.0}, {kMasterDb, -9.2}}},
-      {"Low brass, chords", {{kInstrument, kTuba}, {kPlayMode, 1}, {kPlayers, 2}, {kRoomSize, 5}, {kMicDistance, 4.0}, {kMasterDb, -8.2}}},
+      {"Low brass, chords", {{kInstrument, kTuba}, {kPlayMode, 1}, {kPlayers, 2}, {kRoomSize, 5}, {kMicDistance, 4.0}, {kMasterDb, -5.4}}},
       {"Sax soli", {{kInstrument, kAltoSax}, {kPlayMode, 1}, {kVibrato, 14}, {kStereoWidth, 1.0}, {kRoomSize, 4}, {kMicDistance, 2.0}, {kMasterDb, -7.7}}},
       {"Woodwind choir", {{kInstrument, kClarinet}, {kPlayMode, 1}, {kVibrato, 0}, {kRoomSize, 5}, {kMicDistance, 3.0}, {kMasterDb, -4.2}}},
       {"Tenor unison", {{kInstrument, kTenorSax}, {kPlayers, 3}, {kSpread, 12}, {kRoomSize, 4}, {kMicDistance, 2.0}, {kMasterDb, -10.4}}},
@@ -92,7 +92,7 @@ inline const std::vector<Preset>& all() {
       // --- home tape: horns recorded in a bedroom on a worn deck, fitted to the song corpus ----------------
       {"Home-taped horn section", {{kInstrument, kTrumpet}, {kPlayMode, 1}, {kLowInstrument, kFrenchHorn + 1}, {kSplitKey, 66}, {kVibrato, 6}, {kRoomSize, 2}, {kMicDistance, 0.6}, {kWowFlutter, 18}, {kTapeBandwidth, 3000}, {kMasterDb, -9.3}}},
       {"Home-taped low brass", {{kInstrument, kTrombone}, {kPlayMode, 1}, {kLowInstrument, kTuba + 1}, {kSplitKey, 50}, {kVibrato, 6}, {kRoomSize, 2}, {kMicDistance, 0.6}, {kWowFlutter, 18}, {kTapeBandwidth, 3000}, {kMasterDb, -8.0}}},
-      {"Home-taped tuba", {{kInstrument, kTuba}, {kVibrato, 0}, {kRoomSize, 2}, {kMicDistance, 0.1}, {kMicPattern, 1}, {kWowFlutter, 18}, {kTapeBandwidth, 3000}, {kMasterDb, -7.0}}},
+      {"Home-taped tuba", {{kInstrument, kTuba}, {kVibrato, 0}, {kRoomSize, 2}, {kMicDistance, 0.3}, {kMicPattern, 1}, {kWowFlutter, 18}, {kTapeBandwidth, 3000}, {kMasterDb, 0.5}}},
   };
   return table;
 }

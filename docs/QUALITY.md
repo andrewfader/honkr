@@ -100,3 +100,11 @@ brass, and the flute's odd/even and brightening errors fell 1.0 dB and 0.06 octa
 bass clarinet's brightness error rose from 0.15 to 0.22 octaves, the flute's noise from 3.4 to 5.0
 dB, the horn's odd/even from 1.4 to 2.0. Instrument trims now aim the held tone's peak, not the
 attack's, at -3 dBFS: the limiter catches a tongued attack, as the bar above already allows.
+The eighth found the tuba's pianissimo and mezzo-forte had never been measured: their hiss lies
+within 35 dB of their notes and the extraction read each file as one note (references/README.md).
+With them (and two more bassoon notes the same fix separated), the baseline was rewritten for the
+tuba and bassoon alone, and the tuba stood at a 6.4 dB profile error, 0.40 octaves of brightness and
+0.77 of brightening from pianissimo to fortissimo. Refitted to all of its notes and to the tuba
+line's long-term spectrum (docs/PHYSICS.md), those fell to 4.8 dB, 0.33 and 0.41, and its odd/even
+error from 1.2 to 0.9 dB. Accepted: its error in the gain from pianissimo to fortissimo rose from
+2.0 to 3.4 dB. Its trim fell from -8.2 to -23.6 dB and the four tuba presets' masters rose with it.

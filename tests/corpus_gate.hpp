@@ -117,19 +117,27 @@ inline double wobble_cents(const std::vector<float>& mono) {
 
 }  // namespace detail
 
+constexpr int kSpectrumFft = 8192;
+
+// The long-term power spectrum of a mono signal, bin k at k rate / kSpectrumFft Hz: the frames
+// within 40 dB of the loudest, summed.
+inline std::vector<double> long_term_spectrum(const std::vector<float>& y) {
+  const auto S = detail::stft_power(y, kSpectrumFft, 2048);
+  std::vector<double> e(S.size());
+  double emax = 0.0;
+  for (size_t t = 0; t < S.size(); ++t) { for (double v : S[t]) e[t] += v; emax = std::max(emax, e[t]); }
+  std::vector<double> P(S[0].size(), 0.0);
+  for (size_t t = 0; t < S.size(); ++t) if (e[t] > emax * 1e-4) for (size_t k = 0; k < P.size(); ++k) P[k] += S[t][k];
+  return P;
+}
+
 inline Features measure(const std::vector<float>& left, const std::vector<float>& right, double rate) {
   Features f;
   std::vector<float> y(left.size());
   for (size_t i = 0; i < y.size(); ++i) y[i] = 0.5f * (left[i] + right[i]);
   {
-    const int n_fft = 8192;
-    const auto S = detail::stft_power(y, n_fft, 2048);
-    std::vector<double> e(S.size());
-    double emax = 0.0;
-    for (size_t t = 0; t < S.size(); ++t) { for (double v : S[t]) e[t] += v; emax = std::max(emax, e[t]); }
-    std::vector<double> P(S[0].size(), 0.0);
-    for (size_t t = 0; t < S.size(); ++t) if (e[t] > emax * 1e-4) for (size_t k = 0; k < P.size(); ++k) P[k] += S[t][k];
-    const auto hz = [&](size_t k) { return static_cast<double>(k) * rate / n_fft; };
+    const std::vector<double> P = long_term_spectrum(y);
+    const auto hz = [&](size_t k) { return static_cast<double>(k) * rate / kSpectrumFft; };
     double sum = 0.0, weighted = 0.0;
     for (size_t k = 0; k < P.size(); ++k) if (hz(k) >= 20.0) { sum += P[k]; weighted += P[k] * hz(k); }
     f.centroid_hz = weighted / sum;
@@ -145,25 +153,40 @@ inline Features measure(const std::vector<float>& left, const std::vector<float>
   return f;
 }
 
-// A gated preset: what it plays, the stem it is measured as, and the groups of excerpts whose
-// interquartile ranges it must sit inside (all of them). A stated allowance widens the top of a
-// range where the records cannot be reached honestly; it is the measured gap plus about 10 Hz,
-// written down here and still held.
-struct Case {
-  const char* preset; Phrase phrase; const char* stem; std::vector<const char*> groups;
-  double centroid_allowance_hz = 0.0, rolloff_allowance_hz = 0.0;
-};
+// The recording a home-taped tuba is held to: the University of Iowa tuba playing the tuba line
+// (references/), passed through this bedroom, microphone pair and tape (tools/corpus_render.cpp
+// iowa-tuba), measured by features.py (tools/corpus_reference.py). The preset gated against it
+// records the same way, so the two differ only in the instrument.
+struct Transfer { int room; double distance_m; int pattern; double mic_setup, wow_cents, bandwidth_hz; };
+inline constexpr Transfer kHomeTape{2, 0.3, 1, 0.0, 18.0, 3000.0};
+
+inline void record_as(const Transfer& t, Settings& s) {
+  s.v[params::kRoomSize] = t.room;
+  s.v[params::kMicDistance] = t.distance_m;
+  s.v[params::kMicPattern] = t.pattern;
+  s.v[params::kMicSetup] = t.mic_setup;
+  s.v[params::kWowFlutter] = t.wow_cents;
+  s.v[params::kTapeBandwidth] = t.bandwidth_hz;
+}
+
+// A group of excerpts or takes a preset answers to, and what of theirs it answers to: their
+// spectrum (centroid and roll-off), their placement (L/R correlation and tape wobble), or both.
+struct Answer { const char* group; bool spectrum = true, placement = true; };
+
+// A gated preset: what it plays, the stem it is measured as, and the ranges it must sit inside
+// (all of them).
+struct Case { const char* preset; Phrase phrase; const char* stem; std::vector<Answer> answers; };
 
 inline const std::vector<Case>& cases() {
   static const std::vector<Case> c{
-      {"Home-taped horn section", Phrase::Counterpoint, "other", {"OTC_winds", "OTC"}},
-      {"Home-taped low brass", Phrase::Counterpoint, "other", {"OTC_winds", "OTC"}},
-      // OTC's bass stems (mostly bass guitar, and what htdemucs_6s keeps of a bass line) centre at
-      // 121 Hz; a tuba radiates far more of its upper partials: the University of Iowa tuba's
-      // C2 to A2 at ff centre at 450 to 540 Hz with the fundamental 15 to 24 dB under the
-      // strongest partial (references/features.tsv). Close-miked on a cardioid, whose proximity
-      // effect lifts the fundamentals, it still centres at 254 Hz with its roll-off at 458 Hz.
-      {"Home-taped tuba", Phrase::BassLine, "bass", {"OTC"}, 116.0, 260.0},
+      {"Home-taped horn section", Phrase::Counterpoint, "other", {{"OTC_winds"}, {"OTC"}}},
+      {"Home-taped low brass", Phrase::Counterpoint, "other", {{"OTC_winds"}, {"OTC"}}},
+      // The records' bass stems hold no tuba: a real one, separated by htdemucs_6s with or
+      // without a band around it, lands in `bass` at mezzo-forte with its partials kept (the
+      // stem's centroid rising from 120 Hz to 280 or more) and in `guitar` at fortissimo
+      // (docs/CORPUS.md). Its spectrum answers to the real tuba recorded the same way; its
+      // placement and the tape's wobble to the records.
+      {"Home-taped tuba", Phrase::TubaLine, "bass", {{"Iowa_tuba_taped", true, false}, {"OTC", false, true}}},
   };
   return c;
 }
@@ -179,21 +202,34 @@ inline long preset_index(const char* name) {
   return -1;
 }
 
-// What lies outside the group's interquartile ranges (with the case's allowances), one clause
-// per feature; empty when inside.
-inline std::string outside(const Features& f, const Reference& r, const Case& c) {
+// What lies outside the ranges a preset answers to in one group, one clause per feature; empty
+// when inside.
+inline std::string outside(const Features& f, const Reference& r, const Answer& a) {
   std::string out;
-  const auto within = [&](const char* name, double value, const Stat& s, double allowance) {
-    const double hi = s.q75 + allowance;
-    if (value >= s.q25 && value <= hi) return;
+  const auto within = [&](const char* name, double value, const Stat& s) {
+    if (value >= s.q25 && value <= s.q75) return;
     char line[160];
-    std::snprintf(line, sizeof(line), "%s %s %.4g outside %.4g..%.4g; ", r.group, name, value, s.q25, hi);
+    std::snprintf(line, sizeof(line), "%s %s %.4g outside %.4g..%.4g; ", r.group, name, value, s.q25, s.q75);
     out += line;
   };
-  within("centroid Hz", f.centroid_hz, r.centroid_hz, c.centroid_allowance_hz);
-  within("roll-off Hz", f.rolloff85_hz, r.rolloff85_hz, c.rolloff_allowance_hz);
-  within("L/R correlation", f.corr, r.corr, 0.0);
-  within("wobble cents", f.wobble_cents, r.wobble_cents, 0.0);
+  if (a.spectrum) {
+    within("centroid Hz", f.centroid_hz, r.centroid_hz);
+    within("roll-off Hz", f.rolloff85_hz, r.rolloff85_hz);
+  }
+  if (a.placement) {
+    within("L/R correlation", f.corr, r.corr);
+    within("wobble cents", f.wobble_cents, r.wobble_cents);
+  }
+  return out;
+}
+
+// Every range of every group a case answers to that the features fall outside; empty when inside.
+inline std::string outside(const Features& f, const Case& c) {
+  std::string out;
+  for (const Answer& a : c.answers) {
+    const Reference* r = reference(a.group, c.stem);
+    out += r ? outside(f, *r, a) : std::string("no reference ") + a.group + " " + c.stem + "; ";
+  }
   return out;
 }
 

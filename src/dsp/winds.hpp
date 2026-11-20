@@ -71,10 +71,12 @@ struct Instrument {
 // harmonics of the note) opens from pianissimo to fortissimo, for the loops that radiate more
 // upper harmonics than the real instrument (the brass lips' valve shuts on every cycle however
 // softly it is blown). All are fitted to the University of Iowa recordings
-// (references/README.md); instruments without a recording take their family's.
-struct Dynamics { double level_exponent = 0.0; double tilt_db = 0.0; double treble_db = 0.0; double lp_pp = 0.0; double lp_ff = 0.0; int lp_poles = 2; double hiss = 0.0; };
+// (references/README.md); instruments without a recording take their family's. The treble
+// shelf's corner is at 1.5 times the note's pitch, or where the recordings put it (the tuba's).
+struct Dynamics { double level_exponent = 0.0; double tilt_db = 0.0; double treble_db = 0.0; double lp_pp = 0.0; double lp_ff = 0.0; int lp_poles = 2; double hiss = 0.0; double shelf_harmonic = 1.5; };
 inline double g_dyn_k = -1.0, g_dyn_tilt = -1.0, g_dyn_treble = -100.0, g_dyn_lp_pp = -1.0, g_dyn_lp_ff = -1.0;  // experiment overrides
 inline int g_dyn_lp_order = -1;  // experiment override
+inline double g_dyn_shelf = -1.0;  // experiment override
 inline double g_hiss = -1.0;  // experiment override
 
 constexpr int kInstrumentCount = 27;
@@ -136,7 +138,7 @@ inline const std::array<Instrument, kInstrumentCount>& instruments() {
       {"French horn", Family::Brass, lips(0.5, 1600, 0.95, 794, 350), F::Valves, 35, 77, 43.65, 3, 2, 16, 0.275, 0.875, 0.01, 0, {{{450, 1.0, 3.0}, {1800, 0.8, -8.0}}}, 900, 58.27, 61},
       {"Trombone", Family::Brass, lips(0.5, 1800, 0.92, 670, 150), F::Slide, 34, 77, 58.27, 5, 1, 10, 0.269, 0.944, 0.01, 0, {{{600, 1.0, 3.0}, {1800, 1.2, 2.0}}}, 0},
       {"Euphonium", Family::Brass, lips(0.5, 1100, 0.93, 300, 250), F::Valves, 29, 75, 58.27, 4, 1, 9, 0.3, 1.0, 0.01, 0, {{{400, 1.0, 3.0}, {1500, 1.0, -3.0}}}, 700},
-      {"Tuba", Family::Brass, lips(0.5, 700, 0.94, 490, 250, 2), F::Valves, 26, 65, 29.14, 4, 1, 8, 0.3, 1.0, 0.012, 0, {{{220, 1.0, 3.0}, {900, 1.0, -3.0}}}, 500},
+      {"Tuba", Family::Brass, lips(0.5, 700, 0.94, 170, 250, 2), F::Valves, 26, 65, 29.14, 4, 1, 8, 0.457, 0.605, 0.012, 0, {{{220, 1.0, 3.0}, {900, 1.0, -3.0}}}, 500},
       {"Bugle", Family::Brass, lips(0.5, 2000, 0.90, 700, 350), F::Natural, 55, 79, 98.0, 0, 2, 8, 0.3, 1.0, 0.012, 0, {{{1100, 1.0, 3.0}, {2400, 1.2, 1.0}}}, 0},
       {"Alphorn", Family::Brass, lips(0.5, 1000, 0.94, 250, 150), F::Natural, 42, 90, 92.5, 0, 2, 12, 0.3, 1.0, 0.01, 0, {{{500, 1.0, 3.0}, {1500, 1.0, -2.0}}}, 0, 0.0, 128, false},
       {"Shofar", Family::Brass, lips(0.8, 2200, 0.85, 800, 200), F::Natural, 60, 81, 175.0, 0, 2, 4, 0.36, 0.95, 0.05, 28.0, {{{1500, 1.5, 5.0}, {3200, 1.5, 3.0}}}, 0, 0.0, 128, false},
@@ -515,7 +517,7 @@ inline const std::array<Dynamics, kInstrumentCount>& dynamics_table() {
       {0.208, 10.1, 1.0, 2.7, 7.83, 4, 0.025},   // French horn (fitted)
       {0.863, 4.2, 3.3, 6.08, 37.5, 4, 0.02},    // trombone (fitted)
       {1.050, 6.2, 3.3, 7.1, 68.0, 4, 0.03},    // euphonium (the trombone's)
-      {0.000, 24.0, 21.3, 8.0, 8.0, 2, 0.14},    // tuba (fitted at fortissimo, the only dynamic recorded; its pianissimo treble set to the trombone's)
+      {0.600, 15.0, 38.3, 2.40, 37.4, 4, 0.14, 2.5},  // tuba (fitted, with the tuba line's long-term spectrum: tools/fit/fittuba.cpp)
       {0.000, 0.0, -3.0, 2.4, 2.7, 2, 0.01},    // bugle (the trumpet's)
       {0.170, 9.6, 1.5, 2.7, 7.1, 4, 0.025},   // alphorn (the horn's)
       {0.000, 0.0, -3.0, 2.4, 2.7, 2, 0.01},    // shofar (the trumpet's)
@@ -946,7 +948,8 @@ class Section {
       const double treble = g_dyn_treble > -99.0 ? g_dyn_treble : dyn.treble_db;
       if (k > 0.0) out *= static_cast<float>(std::pow(std::max(pressure, 1e-4) / loud_pressure(p), k));
       if (tilt != 0.0 || treble != 0.0) {
-        if ((p.age & 63) == 1) p.tilt.set(Biquad::Type::HighShelf, std::min(1.5 * p.fingered.hz, 0.4 * rate_), 0.7, treble - tilt * (1.0 - dynamic(p)), rate_);
+        const double shelf = g_dyn_shelf > 0.0 ? g_dyn_shelf : dyn.shelf_harmonic;
+        if ((p.age & 63) == 1) p.tilt.set(Biquad::Type::HighShelf, std::min(shelf * p.fingered.hz, 0.4 * rate_), 0.7, treble - tilt * (1.0 - dynamic(p)), rate_);
         out = p.tilt.process(out);
       }
       const double lp_pp = g_dyn_lp_pp >= 0.0 ? g_dyn_lp_pp : dyn.lp_pp, lp_ff = g_dyn_lp_ff >= 0.0 ? g_dyn_lp_ff : dyn.lp_ff;

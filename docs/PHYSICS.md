@@ -131,8 +131,7 @@ from pianissimo to fortissimo.
 The bell's reflection is two poles of low-pass at the instrument's cutoff (above it the bore
 stops reflecting and radiates) and the walls' loss. A bell radiates its low frequencies poorly:
 the radiated wave rises toward a corner of its own (a high-pass, one or two poles), fitted on the
-brass to the recordings' harmonic profiles. The tuba's is at 490 Hz with two poles, so at
-fortissimo its fundamental is 18 dB under the 4th and 5th harmonics, as recorded; the
+brass to the recordings' harmonic profiles. The tuba's is at 170 Hz with two poles; the
 trombone's at 670 Hz, the horn's at 790, the trumpet's at 970 with two. The body's colour is two
 peaking filters per instrument, set by ear.
 
@@ -230,8 +229,8 @@ grew duller. What players actually do, and what HONKR now does:
 Those are physics. Three more laws are **fitted to the recordings**, not derived, because the
 loops' saturation is a property of these minimal models rather than of the instruments: the
 radiated level grows as the mouth's pressure to a fitted power; a treble shelf at 1.5 times
-the note's pitch is set to a fitted level at every dynamic and cut by a fitted amount at
-pianissimo; and a low-pass (two or four poles) whose cutoff, in harmonics of the note, opens
+the note's pitch (the tuba's at 2.5) is set to a fitted level at every dynamic and cut by a fitted
+amount at pianissimo; and a low-pass (two or four poles) whose cutoff, in harmonics of the note, opens
 from a fitted value at pianissimo to one at fortissimo. The low-pass is there because some loops
 radiate far more upper harmonics than the instrument: the brass lips' valve is shut at rest and
 slaps shut on every cycle however softly it is blown, so its tone is as buzzy just above the
@@ -259,8 +258,29 @@ per instrument (`dynamics_table` in `src/dsp/winds.hpp`) at one note
 in the middle of each recorded octave, to the recordings' gain from pp to ff and their brightness
 at pp and at ff; instruments without a recording take their family's. The brass laws and bell
 corners were fitted together, by coordinate descent over all of them per instrument
-(`tools/fit/fitbrass.cpp`). The tuba was recorded at fortissimo only: its pianissimo treble is
-set to the trombone's, unverified. The cone reeds' radiation corners and laws were refitted the
+(`tools/fit/fitbrass.cpp`). The tuba was long fitted at fortissimo alone, because the reference
+extraction had read its pianissimo and mezzo-forte files (whose hiss lies within 35 dB of their
+notes) as one note each and dropped them (references/README.md). With all three dynamics, the old
+fit was half an octave too dull at fortissimo and too bright at mezzo-forte when the tuba line is
+measured as the song corpus measures it (docs/CORPUS.md): a two-pole low-pass fixed at 8
+harmonics thinned the fortissimo above its tenth harmonic, where the recording's C2 holds its
+partials within 13 dB of the strongest up to the twentieth. It is refitted (`tools/fit/fittuba.cpp`) to every recorded note's profile and to
+the tuba line's long-term spectrum at mezzo-forte and fortissimo together: the breath's range 0.457
+to 0.605 of the mouth's pressure, a 170 Hz two-pole corner, a four-pole low-pass opening from 2.4
+to 37 harmonics, the level as the pressure to the power 0.6, and the treble shelf at the 2.5th
+harmonic, 38 dB at fortissimo and 15 dB less at pianissimo. A fortissimo's partials grow faster
+than its fundamental (Benade's spectrum enrichment), so the shelf's corner sits above the second
+harmonic, and the fortissimo's 2nd to 4th harmonics, which the recording holds 7 to 14 dB under its
+strongest, stop crowding the spectrum. Its brightness from pianissimo to fortissimo is now 0.41
+octaves off the recording's, from 0.77, its profile 4.8 dB, from 6.4. Two things it does not do:
+the recording's mezzo-forte falls away above one frequency, about 500 Hz, whatever the note (the A2's
+5th to 8th harmonics 18 dB under its strongest, HONKR's 3.5; the C2's, at 1.4 and 1.5 dB, agree), which no law in harmonics of the note
+can follow (a low-pass in hertz, tried, fitted the profiles worse); and its gain in level from
+pianissimo to fortissimo is 3.4 dB off the recording's on average across the octave, against 2.0
+before (accepted). A
+steepened wave reaching further into a shock on these long periods was tried as well (the steepening
+delay is capped at 0.4 ms, little against a C2's 15 ms): it brightened the fortissimo by 40 Hz and
+cost 1.6 dB of odd/even balance. The cone reeds' radiation corners and laws were refitted the
 same way: the bassoon's corner is 510 Hz and the oboe's 820, both two-pole, with a treble shelf of
 26 dB, which brings their fortissimo brightness to the recordings' (the bassoon within 0.11
 octaves, the oboe 0.26); the saxophones' corners are 285 Hz (alto) and 320 (soprano), one-pole,

@@ -61,7 +61,7 @@ constexpr std::array<double, params::kInstrumentCount> kInstrumentDb{
     +1.5,  // french horn
     -3.9,  // trombone
     -4.4,  // euphonium
-    -8.2,  // tuba
+    -23.6,  // tuba
     -1.1,  // bugle
     -7.9,  // alphorn
     -2.6,  // shofar

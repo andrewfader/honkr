@@ -19,9 +19,15 @@ trumpet, trombone and tuba. The other fifteen HONKR instruments have no referenc
 |---|---|---|
 | `manifest.tsv` | which recordings, at which dynamic | yes |
 | `checksums.sha256` | their SHA-256, pinned | yes |
-| `features.tsv` | the features of every note of them (375 notes) | yes: numbers measured from the recordings, small |
+| `features.tsv` | the features of every note of them (401 notes) | yes: numbers measured from the recordings, small |
 | `baseline.tsv` | HONKR's scores against them | yes |
 | the recordings | 151 MB of AIFF | no: `~/.cache/honkr-references` |
+
+**The notes** are cut from each scale where it sounds louder than 35 dB under its loudest note, or,
+in a file whose hiss lies less than 35 dB under its notes (the tuba's pianissimo and mezzo-forte,
+the bassoon's mezzo-forte), 6 dB over that floor. Without it the tuba's two quiet files each read as one long note and gave
+none, and the bassoon's mezzo-forte ran some notes together (6 notes where it now gives 8);
+`reference_tests` holds every listed recording to giving notes.
 
 **The features** (`tests/timbre.hpp`), each on the steady middle half of a note: the first ten
 harmonics' levels against the strongest; their centroid in harmonic numbers (brightness); the odd

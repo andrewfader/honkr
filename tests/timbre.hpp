@@ -91,16 +91,21 @@ inline Features analyse(const std::vector<float>& x, double rate, size_t onset, 
   return f;
 }
 
-// The notes of a recorded chromatic scale: stretches louder than 35 dB under the file's peak,
-// at least 0.25 s long, separated by silence.
+// The notes of a recorded chromatic scale: stretches louder than 35 dB under the file's peak
+// (or, where the file's floor, its quietest 5%, lies above that, 6 dB over the floor), at least
+// 0.25 s long, separated by silence.
 struct Segment { size_t onset, length; };
 inline std::vector<Segment> segment(const std::vector<float>& x, double rate) {
   const size_t hop = static_cast<size_t>(rate * 0.01);
   std::vector<double> env;
   for (size_t p = 0; p + hop <= x.size(); p += hop) env.push_back(measure::rms(measure::Span(x, p, hop)));
+  if (env.empty()) return {};
   double peak = 1e-12;
   for (double e : env) peak = std::max(peak, e);
-  const double threshold = peak * std::pow(10.0, -35.0 / 20.0);
+  std::vector<double> sorted = env;
+  std::nth_element(sorted.begin(), sorted.begin() + static_cast<long>(sorted.size() / 20), sorted.end());
+  const double hiss = sorted[sorted.size() / 20], under = peak * std::pow(10.0, -35.0 / 20.0);
+  const double threshold = hiss < under ? under : 2.0 * hiss;
   std::vector<Segment> out;
   size_t i = 0;
   while (i < env.size()) {

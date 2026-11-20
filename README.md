@@ -65,8 +65,10 @@ clarinet", "Oboe, baroque", "Highland pipes", "Breathy flute", "Shakuhachi" and 
 for breath controllers, and horns recorded at home on tape ("Home-taped horn section",
 "Home-taped low brass", "Home-taped tuba"); all measured against the
 [quality bar](docs/QUALITY.md) by `build/honkr-preset-audit` and held to it by the test suite. The
-home-taped ones are fitted to the separated stems of a corpus of home-recorded records and held
-inside their ranges by `corpus_gate_tests` (see [docs/CORPUS.md](docs/CORPUS.md)).
+home-taped sections are fitted to the separated stems of a corpus of home-recorded records and held
+inside their ranges by `corpus_gate_tests`; the home-taped tuba, whose records hold no tuba, to the
+University of Iowa tuba recorded through the same bedroom, microphones and tape (see
+[docs/CORPUS.md](docs/CORPUS.md)).
 
 Notes beyond an instrument's compass sound an octave inside it. CLAP and MIDI note dialects,
 sample-accurate events, parameter modulation, state with the editor's size.
@@ -104,8 +106,8 @@ hardware, installed plug-ins or the network.
 | `winds_tests` | fingering (the trumpet's chart, lipping against the horn's own intonation, the trombone's slide and trigger, the double horn, natural horns, the chanter), the compass, solo slurs, sections and unisons, breath from a controller, the drones |
 | `air_tests` | the room and its air against the physics: the speed of sound, ISO 9613-1, Sabine's time |
 | `engine_tests` | notes, breath controllers, dynamics, the instrument switch, the wheels, every instrument at a comparable level, every preset against the quality bar, the limiter, the tail |
-| `corpus_gate_tests` | the presets fitted to the song corpus inside the records' ranges, measured as the corpus's extractor measures them (see [docs/CORPUS.md](docs/CORPUS.md)) |
-| `reference_tests` | every note of 35 recordings of the real instruments (University of Iowa, 12 instruments, pp/mf/ff) replayed through HONKR; no instrument may match them worse than `references/baseline.tsv` (see [references/README.md](references/README.md)) |
+| `corpus_gate_tests` | the presets fitted to the song corpus inside the records' ranges, measured as the corpus's extractor measures them; the tuba, dry, where the recorded tuba is; what is not a taped tuba told apart (see [docs/CORPUS.md](docs/CORPUS.md)) |
+| `reference_tests` | every note of 35 recordings of the real instruments (University of Iowa, 12 instruments, pp/mf/ff) replayed through HONKR; no instrument may match them worse than `references/baseline.tsv`; every recording gives notes, a quiet one too (see [references/README.md](references/README.md)) |
 | `plugin_smoke`, `note_tests`, `state_tests` | the built `.clap` through the public CLAP ABI: discovery, ports, parameters, events at sample offsets, MIDI, presets, state round trips, malformed state |
 | `advertised_tests` | one proof per parameter from audio; fails if a parameter has no proof |
 | `ui_tests` | the real page table and editor against a fake host that enforces gesture rules and a canvas that records drawing |
@@ -115,7 +117,9 @@ hardware, installed plug-ins or the network.
 `build/honkr-preset-audit <dir>` renders and measures every preset (see
 [docs/QUALITY.md](docs/QUALITY.md)), `build/honkr-note-render` renders one note of any
 instrument for listening and prints its fingering, `build/honkr-corpus-render <dir>` renders the
-corpus-fitted presets as stems for the corpus's own extractor, and `tools/coverage.py` reports line coverage from a
+corpus-fitted presets as stems for the corpus's own extractor (and, with `iowa-tuba`, the recorded
+tuba the home-taped tuba answers to), `tools/tuba_separation.py` shows where the corpus's
+separator puts a real tuba, and `tools/coverage.py` reports line coverage from a
 `-DHONKR_COVERAGE=ON` build. [AGENTS.md](AGENTS.md) is the verification contract for changes.
 
 ## Layout
@@ -132,7 +136,9 @@ corpus-fitted presets as stems for the corpus's own extractor, and `tools/covera
     src/honkr.cpp         the CLAP plug-in (the only file that includes CLAP besides the tests)
     src/ui/               the editor: canvas, layout, widgets, pages, artwork, native backends
     tests/                scenario suites and the CLAP harness
-    tools/                preset_audit.cpp, note_render.cpp, corpus_render.cpp, corpus_reference.py, ui_preview.cpp, coverage.py
+    tools/                preset_audit.cpp, note_render.cpp, corpus_render.cpp, corpus_reference.py, tuba_separation.py,
+                          ui_preview.cpp, coverage.py; references/ (fetching the recordings, splicing the tuba line);
+                          fit/ (the fitting tools behind docs/PHYSICS.md)
     features/             Gherkin scenarios mapped to tests
 
 ## Licence
