@@ -1,7 +1,8 @@
 // The instrument: a wind player (or a section of them) blowing one of the instruments in
-// dsp/winds.hpp, heard in a room through the air, through the master level and an output
-// limiter. The engine knows nothing about CLAP: it takes a snapshot of parameter values per block
-// and note events with sample offsets, and it never allocates while rendering.
+// dsp/winds.hpp, heard in a room through the air, recorded on tape (dsp/tape.hpp), through the
+// master level and an output limiter. The engine knows nothing about CLAP: it takes a snapshot of
+// parameter values per block and note events with sample offsets, and it never allocates while
+// rendering.
 #pragma once
 
 #include <algorithm>
@@ -11,6 +12,7 @@
 
 #include "dsp/air.hpp"
 #include "dsp/core.hpp"
+#include "dsp/tape.hpp"
 #include "dsp/winds.hpp"
 #include "params.hpp"
 
@@ -101,6 +103,7 @@ class Engine {
     rate_ = rate;
     section_.prepare(rate);
     room_.prepare(rate);
+    tape_.prepare(rate);
     limiter_.prepare(rate);
     master_.set_time(10.0, rate);
     master_.snap(dsp::db_to_gain(params::kSpecs[params::kMasterDb].def));
@@ -110,6 +113,7 @@ class Engine {
   void reset() {
     section_.reset();
     room_.reset();
+    tape_.reset();
     limiter_.reset();
     bend_.fill(0.0); wheel_.fill(0.0); pressure_.fill(0.0); breath_cc_.fill(0.0); expression_.fill(0.0);
     seen_.fill(false);
@@ -196,6 +200,7 @@ class Engine {
     configure(s);
     master_.target(dsp::db_to_gain(s[params::kMasterDb]));
     room_.configure(room_settings(s));
+    tape_.configure(s[params::kWowFlutter], s[params::kTapeBandwidth]);
     const float trim = static_cast<float>(levels::gain(s.instrument()));
     const bool controlled = controller_breath(s) >= 0.0;
     for (uint32_t i = 0; i < frames; ++i) {
@@ -204,6 +209,7 @@ class Engine {
       section_.render(l, r);
       l *= trim; r *= trim;
       room_.process(l, r);
+      tape_.process(l, r);
       const float gain = static_cast<float>(master_.next());
       l *= gain; r *= gain;
       if (!std::isfinite(l)) l = 0.0f;
@@ -291,6 +297,7 @@ class Engine {
   double rate_ = 48000.0, tempo_ = 120.0;
   dsp::winds::Section section_;
   dsp::air::Room room_;
+  dsp::tape::Tape tape_;
   Limiter limiter_;
   dsp::Smoother master_, controller_smooth_;
   std::array<double, 16> bend_{}, wheel_{}, pressure_{}, breath_cc_{}, expression_{};

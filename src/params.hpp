@@ -38,6 +38,8 @@ enum ParamId : uint32_t {
   kPreset,
   // --- appended: the section's low voices ---------------------------------------------------------------
   kLowInstrument, kSplitKey,
+  // --- appended: the recording machine after the room ---------------------------------------------
+  kWowFlutter, kTapeBandwidth,
   kParamCount
 };
 
@@ -111,7 +113,7 @@ constexpr const char* kSplitKeyNames[kSplitHigh - kSplitLow + 1] = {
     "C5", "C#5", "D5", "Eb5", "E5", "F5", "F#5", "G5", "G#5", "A5", "Bb5", "B5",
     "C6",
 };
-constexpr int kPresetCount = 64;  // The names live in presets.hpp; the table only needs the size.
+constexpr int kPresetCount = 67;  // The names live in presets.hpp; the table only needs the size.
 
 constexpr std::array<ParamSpec, kParamCount> kSpecs{{
     // the instrument and its tuning
@@ -168,6 +170,9 @@ constexpr std::array<ParamSpec, kParamCount> kSpecs{{
     // the section's low voices
     {"Low instrument", "Section/Low voices", 0, kInstrumentCount, 0, true, Unit::Options, kLowInstrumentNames},
     {"Split", "Section/Low voices", kSplitLow, kSplitHigh, 60, true, Unit::Options, kSplitKeyNames},
+    // the tape the room is recorded on
+    {"Wow & flutter", "Room/Tape", 0, 30, 0, false, Unit::Cents, nullptr},
+    {"Tape bandwidth", "Room/Tape", 1000, 20000, 20000, false, Unit::Hz, nullptr},
 }};
 
 // The preset parameter's value names come from the preset table, which lives above this header

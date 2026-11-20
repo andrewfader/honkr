@@ -77,7 +77,7 @@ Feature: Every parameter does what it advertises
       | Low instrument  | a trumpet section's C3, in Section play   | Off       | Trombone      | C3 against the C4 above it                          | under -30 dB (folded up), then at least 30 dB more |
       | Split           | trumpets over trombones, D3               | C3        | C4            | D3 against the D4 above it                          | under -30 dB (trumpets), then at least 30 dB more (trombones) |
 
-    Examples: the room and the air
+    Examples: the room, the air and the tape
       | parameter       | context                                   | low       | high          | measurement                                         | expected                                   |
       | Room            | the alto, microphone at 2 m               | Off       | Studio        | level 50 to 600 ms after release                    | at least 10 dB more                        |
       | Absorption      | the alto in the hall, microphone at 3 m   | 8%        | 60%           | level 50 to 600 ms after release                    | at least 6 dB less                         |
@@ -86,4 +86,6 @@ Feature: Every parameter does what it advertises
       | Temperature     | the alto, microphone at 10 m              | -10 C     | 40 C          | the note's arrival                                  | 2.56 ms +- 0.1 sooner (speed of sound)     |
       | Mic pattern     | the bass clarinet's G2, microphone at 5 cm | Omni     | Cardioid      | the fundamental                                     | the proximity effect, +15.1 dB +- 1.5      |
       | Mic setup       | the alto in the studio, microphone at 2 m | Stereo pair | Mono        | L/R correlation                                     | under 0.95, then 1                         |
+      | Wow & flutter   | the alto's A4, no vibrato                 | 0 ct      | 20 ct         | the pitch's swing at 0.73 Hz and at 6.1 Hz          | under 1 cent, then 10 +- 1.5 cents each    |
+      | Tape bandwidth  | the oboe's C5                             | 20000 Hz  | 2093 Hz       | its 4th harmonic, at the bandwidth; the fundamental | -3.01 dB +- 0.3; 0 +- 0.2 dB               |
       | Preset          | A4                                        | Oboe, orchestral | Oboe, baroque | pitch                                       | A = 415: -101.3 cents +- 4                 |

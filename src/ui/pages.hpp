@@ -34,9 +34,10 @@ inline std::vector<PageSpec> honkr_pages() {
        {{"Players", 0, {knob(kPlayers), knob(kSpread), knob(kTiming)}},
         {"Stereo", 1, {knob(kStereoWidth), knob(kPan)}},
         {"Low voices", 2, {menu(kLowInstrument, 2), knob(kSplitKey)}}}},
-      {"ROOM", "The room the players stand in, the air, and the microphones", theme::cyan, 3, 150,
+      {"ROOM", "The room the players stand in, the air, the microphones, and the tape they are recorded on", theme::cyan, 3, 150,
        {{"Room", 0, {menu(kRoomSize, 2), knob(kRoomAbsorption), knob(kMicDistance)}},
         {"Microphones", 1, {menu(kMicPattern, 2), segments(kMicSetup, 2)}},
+        {"Tape", 1, {knob(kWowFlutter), knob(kTapeBandwidth)}},
         {"Air", 2, {knob(kHumidity), knob(kTemperature)}}}},
   };
 }
@@ -62,6 +63,8 @@ inline const char* honkr_short_name(int id) {
     case kMicPattern: return "Pattern";
     case kMicSetup: return "Setup";
     case kLowInstrument: return "Instrument";
+    case kWowFlutter: return "Wow";
+    case kTapeBandwidth: return "Bandwidth";
     default: return nullptr;
   }
 }

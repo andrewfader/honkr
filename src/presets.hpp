@@ -89,6 +89,10 @@ inline const std::vector<Preset>& all() {
       {"Expression flute", {{kInstrument, kFlute}, {kBreathSource, kFromExpression}, {kVibrato, 12}, {kRoomSize, 5}, {kMicDistance, 2.0}, {kMasterDb, -1.1}}},
       {"Wheel-blown clarinet", {{kInstrument, kClarinet}, {kBreathSource, kFromModWheel}, {kVibrato, 0}, {kRoomSize, 4}, {kMicDistance, 1.5}, {kMasterDb, -4.8}}},
       {"Pressure horn", {{kInstrument, kFrenchHorn}, {kBreathSource, kFromAftertouch}, {kHand, 0.3}, {kVibrato, 0}, {kRoomSize, 5}, {kMicDistance, 4.0}, {kMasterDb, -12.5}}},
+      // --- home tape: horns recorded in a bedroom on a worn deck, fitted to the song corpus ----------------
+      {"Home-taped horn section", {{kInstrument, kTrumpet}, {kPlayMode, 1}, {kLowInstrument, kFrenchHorn + 1}, {kSplitKey, 66}, {kVibrato, 6}, {kRoomSize, 2}, {kMicDistance, 0.6}, {kWowFlutter, 18}, {kTapeBandwidth, 3000}, {kMasterDb, -9.3}}},
+      {"Home-taped low brass", {{kInstrument, kTrombone}, {kPlayMode, 1}, {kLowInstrument, kTuba + 1}, {kSplitKey, 50}, {kVibrato, 6}, {kRoomSize, 2}, {kMicDistance, 0.6}, {kWowFlutter, 18}, {kTapeBandwidth, 3000}, {kMasterDb, -8.0}}},
+      {"Home-taped tuba", {{kInstrument, kTuba}, {kVibrato, 0}, {kRoomSize, 2}, {kMicDistance, 0.1}, {kMicPattern, 1}, {kWowFlutter, 18}, {kTapeBandwidth, 3000}, {kMasterDb, -7.0}}},
   };
   return table;
 }

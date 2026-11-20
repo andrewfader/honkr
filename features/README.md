@@ -13,6 +13,7 @@ this directory, and a test without a scenario is a bug in the test.
 | air.feature | `air_tests` |
 | engine.feature | `engine_tests` |
 | references.feature | `reference_tests` |
+| corpus_gate.feature | `corpus_gate_tests` |
 | clap_plugin.feature | `plugin_smoke`, `note_tests`, `state_tests` |
 | advertised_parameters.feature | `advertised_tests` |
 | editor.feature | `ui_tests`, `frontend_tests` (Linux) |

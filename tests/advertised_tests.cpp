@@ -14,6 +14,7 @@
 
 #include "../src/dsp/air.hpp"
 #include "../src/dsp/core.hpp"
+#include "../src/dsp/tape.hpp"
 #include "../src/dsp/temperament.hpp"
 #include "../src/params.hpp"
 #include "audio_measure.hpp"
@@ -673,6 +674,30 @@ std::array<Proof, P::kParamCount> proofs() {
   set(kSplitKey, ctx(kTrumpet, {still, {kPlayMode, 1}, {kLowInstrument, kTrombone + 1}}, 50), 48, 60, [](const Render& a, const Render& b) {
     const double ra = tone_db(held(a), g_note_hz) - tone_db(held(a), 2.0 * g_note_hz), rb = tone_db(held(b), g_note_hz) - tone_db(held(b), 2.0 * g_note_hz);
     return verdict(ra < -30.0 && rb > ra + 30.0, "D3 against D4: %.1f dB (split C3: the trumpets) -> %.1f dB (split C4: the trombones) (expected under -30, then at least 30 dB more)", ra, rb);
+  });
+
+  // --- the tape ---------------------------------------------------------------------------------------
+  // The alto's A4 without vibrato, on a tape whose speed swings 20 cents: its pitch swings 10
+  // cents either way at the wow's 0.73 Hz and 10 at the flutter's 6.1 Hz.
+  {
+    Context c = ctx(kAltoSax, {still}, 69); c.hold_s = 4.5;
+    set(kWowFlutter, c, 0, 20, [](const Render& a, const Render& b) {
+      const auto swings = [](const Render& r) {
+        std::vector<double> cents;
+        for (double hz : pitch_track(r, 0.5, 4.2, g_note_hz)) cents.push_back(measure::cents(hz, g_note_hz));
+        return measure::sine_amplitudes(cents, 0.01, {honkr::dsp::tape::Tape::kWowHz, honkr::dsp::tape::Tape::kFlutterHz});
+      };
+      const auto sa = swings(a), sb = swings(b);
+      return verdict(sa[0] < 1.0 && sa[1] < 1.0 && std::abs(sb[0] - 10.0) <= 1.5 && std::abs(sb[1] - 10.0) <= 1.5,
+                     "wow and flutter %.1f, %.1f cents -> %.1f, %.1f cents (expected under 1, then 10 +- 1.5 each)", sa[0], sa[1], sb[0], sb[1]);
+    });
+  }
+  // The oboe's C5 on a tape whose bandwidth is its 4th harmonic, 2093 Hz: that harmonic falls
+  // 3.0 dB, the fundamental two octaves below holds.
+  set(kTapeBandwidth, ctx(kOboe, {still}, 72), 20000, 4.0 * honkr::dsp::midi_to_hz(72), [](const Render& a, const Render& b) {
+    const double h4 = tone_db(held(b), 4.0 * g_note_hz, 10.0) - tone_db(held(a), 4.0 * g_note_hz, 10.0);
+    const double h1 = tone_db(held(b), g_note_hz, 10.0) - tone_db(held(a), g_note_hz, 10.0);
+    return verdict(std::abs(h4 + 3.01) <= 0.3 && std::abs(h1) <= 0.2, "4th harmonic %+.2f dB, fundamental %+.2f dB (expected -3.01 +- 0.3, then 0 +- 0.2)", h4, h1);
   });
 
   // "Oboe, orchestral" to "Oboe, baroque": the same oboe at A = 415, 101.6 cents lower on A4.

@@ -300,6 +300,23 @@ key its own player. Up to four players double each note, each tuned up to the Sp
 couple of cents of their own), entering up to the Timing apart, breathing a few percent
 differently, and seated across the stereo width.
 
+## The tape
+
+After the room, what the microphones gave is recorded on tape (`src/dsp/tape.hpp`), as a home
+four-track would carry it. Only the two things such a machine is measured by are modelled:
+
+- Wow and flutter: the tape's speed swings, so every pitch on it swings together, in both channels.
+  A slow wow at 0.73 Hz (a capstan or reel turning) and a flutter at 6.1 Hz (the tape juddering over
+  the heads) each swing up to half the stated cents, so together they reach it where they coincide.
+  A changing speed is a changing delay: read d(t) seconds late, the tape plays at 1 - d'(t) of its
+  speed, so c cents at f Hz is a delay of A (1 - cos 2 pi f t) with A = (2^(c/1200) - 1) / (2 pi f),
+  read with four-point Hermite interpolation. `dsp_tests` measures 10 cents at each rate for 20.
+- Bandwidth: the heads' and the tape's treble loss, a fourth-order Butterworth low-pass at the
+  stated -3 dB point; at its top, 20 kHz, the tape passes everything.
+
+Not modelled: magnetisation and its saturation, bias, hiss, print-through, head bump, and flutter's
+random component (both swings are sinusoids, so a render is repeatable).
+
 ## What is not simulated
 
 - Tone holes as acoustic elements: the bore is the sounding note's length, not a pipe with open

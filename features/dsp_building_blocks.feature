@@ -29,3 +29,17 @@ Feature: The building blocks measure as the physics and the treatises say
     Given a delay line holding an impulse, read 10.25 samples back
     Then the impulse comes out split between samples 10 and 11 as 0.75 and 0.25: its centre at 10.25
     And a whole-sample read is exact, and a read past the capacity is held at the capacity
+
+  # the_tapes_wow_and_flutter_swing_every_pitch_by_the_stated_cents
+  Scenario: The tape's wow and flutter swing every pitch by the stated cents
+    Given a 1 kHz sine recorded on the tape with 20 cents of wow and flutter, tracked every 5 ms for four seconds
+    Then the pitch swings 10 cents either way at the wow's 0.73 Hz and 10 at the flutter's 6.1 Hz: together they reach the 20 cents
+    When the tape runs true
+    Then the sine passes through untouched, sample for sample
+
+  # the_tapes_bandwidth_is_3_db_down_at_its_corner
+  Scenario: The tape's bandwidth is 3 dB down at its corner
+    Given the tape's bandwidth at 3 kHz: a fourth-order Butterworth low-pass
+    Then a sine at 3 kHz is 3 dB down, one two octaves below passes within 0.1 dB, and an octave above falls as the bilinear Butterworth gives, 24 dB an octave and steeper
+    When the bandwidth is open, at 20 kHz
+    Then a 15 kHz sine passes untouched

@@ -1,7 +1,8 @@
 // Executable scenarios for features/dsp_building_blocks.feature: the temperaments, the limiter,
-// the body and mute filters and the delay line, measured in cents, dB and samples.
+// the body and mute filters, the delay line and the tape, measured in cents, dB and samples.
 #include "../src/dsp/core.hpp"
 #include "../src/dsp/filters.hpp"
+#include "../src/dsp/tape.hpp"
 #include "../src/dsp/temperament.hpp"
 #include "../src/engine.hpp"
 #include "audio_measure.hpp"
@@ -106,6 +107,58 @@ SCENARIO(a_delay_line_delays_by_its_fractional_length) {
   THEN("a whole-sample read is exact, and a read past the capacity is held at the capacity");
   CHECK(line.read_int(31) == 1.0f && line.read_int(30) == 0.0f, "whole-sample read");
   CHECK(line.capacity() == 64 && line.read(1000.0) == line.read(64.0), "clamped to the capacity");
+}
+
+namespace {
+// A sine through the tape, both channels, for `seconds` at 48 kHz; the left channel comes back.
+std::vector<float> through_tape(double cents, double bandwidth_hz, double hz, double seconds) {
+  tape::Tape t;
+  t.prepare(48000.0);
+  t.configure(cents, bandwidth_hz);
+  std::vector<float> out(static_cast<size_t>(seconds * 48000.0));
+  for (size_t i = 0; i < out.size(); ++i) {
+    float l = static_cast<float>(0.25 * std::sin(kTau * hz * static_cast<double>(i) / 48000.0)), r = l;
+    t.process(l, r);
+    out[i] = l;
+  }
+  return out;
+}
+}  // namespace
+
+SCENARIO(the_tapes_wow_and_flutter_swing_every_pitch_by_the_stated_cents) {
+  GIVEN("a 1 kHz sine recorded on the tape with 20 cents of wow and flutter, tracked every 5 ms for four seconds");
+  const auto out = through_tape(20.0, tape::Tape::kOpenHz, 1000.0, 4.5);
+  std::vector<double> cents;
+  for (size_t p = 24000; p + 960 <= out.size(); p += 240) cents.push_back(measure::cents(measure::pitch_hz(measure::Span(out, p, 960), 48000.0, 500.0, 2000.0), 1000.0));
+  const auto amp = measure::sine_amplitudes(cents, 0.005, {tape::Tape::kWowHz, tape::Tape::kFlutterHz});
+  THEN("the pitch swings 10 cents either way at the wow's 0.73 Hz and 10 at the flutter's 6.1 Hz: together they reach the 20 cents");
+  CHECK_NEAR(amp[0], 10.0, 0.5, "wow, cents");
+  CHECK_NEAR(amp[1], 10.0, 0.5, "flutter, cents");
+  double top = -1e9;
+  for (double c : cents) top = std::max(top, c);
+  CHECK(top <= 20.5, spec::fmt("never more than 20 cents sharp: %.1f", top));
+  WHEN("the tape runs true");
+  THEN("the sine passes through untouched, sample for sample");
+  const auto still = through_tape(0.0, tape::Tape::kOpenHz, 1000.0, 0.5);
+  bool same = true;
+  for (size_t i = 0; i < still.size(); ++i) same = same && still[i] == static_cast<float>(0.25 * std::sin(kTau * 1000.0 * static_cast<double>(i) / 48000.0));
+  CHECK(same, "a true tape is transparent");
+}
+
+SCENARIO(the_tapes_bandwidth_is_3_db_down_at_its_corner) {
+  GIVEN("the tape's bandwidth at 3 kHz: a fourth-order Butterworth low-pass");
+  const auto gain_db = [](double bandwidth, double hz) {
+    const auto out = through_tape(0.0, bandwidth, hz, 1.0);
+    return measure::db(measure::tone_amplitude(measure::Span(out, 24000, 16384), 48000.0, hz) / 0.25);
+  };
+  THEN("a sine at 3 kHz is 3 dB down, one two octaves below passes within 0.1 dB, and an octave above falls as the bilinear Butterworth gives, 24 dB an octave and steeper");
+  CHECK_NEAR(gain_db(3000.0, 3000.0), -3.01, 0.1, "corner, dB");
+  CHECK_NEAR(gain_db(3000.0, 750.0), 0.0, 0.1, "two octaves below, dB");
+  const double w = std::tan(kPi * 6000.0 / 48000.0) / std::tan(kPi * 3000.0 / 48000.0);
+  CHECK_NEAR(gain_db(3000.0, 6000.0), -10.0 * std::log10(1.0 + std::pow(w, 8.0)), 0.2, "an octave above, dB");
+  WHEN("the bandwidth is open, at 20 kHz");
+  THEN("a 15 kHz sine passes untouched");
+  CHECK_NEAR(gain_db(tape::Tape::kOpenHz, 15000.0), 0.0, 0.01, "open, dB");
 }
 
 int main(int argc, char** argv) { return spec::run(argc, argv); }

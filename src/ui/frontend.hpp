@@ -78,6 +78,8 @@ const char* gui_help(clap_id id) {
     case kPreset: return "Factory presets: an instrument in a room, ready to play.";
     case kLowInstrument: return "Section play: a second instrument for the keys below the split, as a section voices its low notes on trombones under the trumpets or a tenor and baritone under the altos. Off: every key on the one instrument.";
     case kSplitKey: return "Section play with a low instrument: the lowest key the section's own instrument plays; every key below it goes to the low instrument.";
+    case kWowFlutter: return "The tape's speed swinging, in cents: a slow wow at 0.73 Hz and a flutter at 6.1 Hz, half each, bending every pitch on the tape together, as a worn home tape deck does. 0: a tape that runs true.";
+    case kTapeBandwidth: return "How much treble the tape keeps: the -3 dB point of its high-frequency loss (a fourth-order roll-off). 20 kHz: all of it.";
     default: return nullptr;
   }
 }

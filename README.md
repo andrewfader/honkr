@@ -54,14 +54,19 @@ fingered (held by `horn_tests` to within 25 cents across every compass at mezzo-
 
 **The room and its air**: every instrument plays into a room and is heard through air (ISO
 9613-1 absorption, the speed of sound, image-source reflections, a Sabine tail) by an omni,
-cardioid or figure-8 microphone, as a stereo pair or one mono mic.
+cardioid or figure-8 microphone, as a stereo pair or one mono mic. **The tape** after it: wow and
+flutter that swing every pitch on the tape together, in cents, and the tape's bandwidth, the -3 dB
+point of its treble loss.
 
-**Sixty-four presets**, from "Alto sax", "Smoky tenor" and "Honking R&B tenor" through "Klezmer
+**Sixty-seven presets**, from "Alto sax", "Smoky tenor" and "Honking R&B tenor" through "Klezmer
 clarinet", "Oboe, baroque", "Highland pipes", "Breathy flute", "Shakuhachi" and "Ocarina" to
 "Trumpet, Harmon mute", "Lead trumpet, screaming", "Horn, stopped", "Trombone glissando",
-"Oompah tuba", "Alphorn, its own fa", "Shofar", "Didgeridoo, wah", "Big band trumpets" and presets
-for breath controllers; all measured against the [quality bar](docs/QUALITY.md) by
-`build/honkr-preset-audit` and held to it by the test suite.
+"Oompah tuba", "Alphorn, its own fa", "Shofar", "Didgeridoo, wah", "Big band trumpets", presets
+for breath controllers, and horns recorded at home on tape ("Home-taped horn section",
+"Home-taped low brass", "Home-taped tuba"); all measured against the
+[quality bar](docs/QUALITY.md) by `build/honkr-preset-audit` and held to it by the test suite. The
+home-taped ones are fitted to the separated stems of a corpus of home-recorded records and held
+inside their ranges by `corpus_gate_tests` (see [docs/CORPUS.md](docs/CORPUS.md)).
 
 Notes beyond an instrument's compass sound an octave inside it. CLAP and MIDI note dialects,
 sample-accurate events, parameter modulation, state with the editor's size.
@@ -94,11 +99,12 @@ hardware, installed plug-ins or the network.
 
 | Suite | Proves |
 |---|---|
-| `dsp_tests` | the temperaments against the treatises, the limiter, the filters |
+| `dsp_tests` | the temperaments against the treatises, the limiter, the filters, the tape's wow, flutter and bandwidth |
 | `horn_tests` | the loop's physics: a cylinder's odd harmonics, the reed's threshold, a cone's full harmonic series, the lips choosing partials, the valves' arithmetic, the jet overblowing, the stopped pipe and the vessel, brass blaring, the filters' exact delay, every instrument in tune across its compass |
 | `winds_tests` | fingering (the trumpet's chart, lipping against the horn's own intonation, the trombone's slide and trigger, the double horn, natural horns, the chanter), the compass, solo slurs, sections and unisons, breath from a controller, the drones |
 | `air_tests` | the room and its air against the physics: the speed of sound, ISO 9613-1, Sabine's time |
 | `engine_tests` | notes, breath controllers, dynamics, the instrument switch, the wheels, every instrument at a comparable level, every preset against the quality bar, the limiter, the tail |
+| `corpus_gate_tests` | the presets fitted to the song corpus inside the records' ranges, measured as the corpus's extractor measures them (see [docs/CORPUS.md](docs/CORPUS.md)) |
 | `reference_tests` | every note of 35 recordings of the real instruments (University of Iowa, 12 instruments, pp/mf/ff) replayed through HONKR; no instrument may match them worse than `references/baseline.tsv` (see [references/README.md](references/README.md)) |
 | `plugin_smoke`, `note_tests`, `state_tests` | the built `.clap` through the public CLAP ABI: discovery, ports, parameters, events at sample offsets, MIDI, presets, state round trips, malformed state |
 | `advertised_tests` | one proof per parameter from audio; fails if a parameter has no proof |
@@ -108,7 +114,8 @@ hardware, installed plug-ins or the network.
 `build/honkr-ui-preview <dir>` renders every editor page offscreen on Linux for review,
 `build/honkr-preset-audit <dir>` renders and measures every preset (see
 [docs/QUALITY.md](docs/QUALITY.md)), `build/honkr-note-render` renders one note of any
-instrument for listening and prints its fingering, and `tools/coverage.py` reports line coverage from a
+instrument for listening and prints its fingering, `build/honkr-corpus-render <dir>` renders the
+corpus-fitted presets as stems for the corpus's own extractor, and `tools/coverage.py` reports line coverage from a
 `-DHONKR_COVERAGE=ON` build. [AGENTS.md](AGENTS.md) is the verification contract for changes.
 
 ## Layout
@@ -120,11 +127,12 @@ instrument for listening and prints its fingering, and `tools/coverage.py` repor
                           vibrato, growl, mutes, solo legato, sections, drones)
     src/dsp/temperament.hpp the temperaments
     src/dsp/air.hpp       the room and the air
-    src/engine.hpp        the keys, breath and controllers into the section, the room, the master and limiter
+    src/dsp/tape.hpp      the tape after the room: wow and flutter, bandwidth
+    src/engine.hpp        the keys, breath and controllers into the section, the room, the tape, the master and limiter
     src/honkr.cpp         the CLAP plug-in (the only file that includes CLAP besides the tests)
     src/ui/               the editor: canvas, layout, widgets, pages, artwork, native backends
     tests/                scenario suites and the CLAP harness
-    tools/                preset_audit.cpp, note_render.cpp, ui_preview.cpp, coverage.py
+    tools/                preset_audit.cpp, note_render.cpp, corpus_render.cpp, corpus_reference.py, ui_preview.cpp, coverage.py
     features/             Gherkin scenarios mapped to tests
 
 ## Licence

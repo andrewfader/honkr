@@ -110,6 +110,8 @@ honkr_test(engine_tests)
 # HONKR's distance from the reference recordings may not get worse than references/baseline.tsv.
 honkr_test(reference_tests)
 set_tests_properties(reference_tests PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+# The presets fitted to the song corpus may not leave the records' ranges (docs/CORPUS.md).
+honkr_test(corpus_gate_tests)
 
 # Suites that load the built .clap and drive it through the public CLAP interfaces, as a host does.
 function(honkr_plugin_test name)
@@ -155,6 +157,14 @@ target_compile_features(honkr-note-render PRIVATE cxx_std_20)
 target_include_directories(honkr-note-render PRIVATE src tests)
 target_link_libraries(honkr-note-render PRIVATE honkr_core)
 honkr_warnings(honkr-note-render)
+
+# Renders the presets the song-corpus gate holds as stems for the corpus's own extractor
+# (docs/CORPUS.md); a review and fitting tool. corpus_gate_tests holds them to the records.
+add_executable(honkr-corpus-render tools/corpus_render.cpp)
+target_compile_features(honkr-corpus-render PRIVATE cxx_std_20)
+target_include_directories(honkr-corpus-render PRIVATE src tests)
+target_link_libraries(honkr-corpus-render PRIVATE honkr_core)
+honkr_warnings(honkr-corpus-render)
 
 if(HONKR_EDITOR AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
   # The plug-in side of the editor (host, gestures, relevance, artwork) compiled with the plug-in

@@ -339,4 +339,39 @@ inline double modulation_hz(const std::vector<double>& series, double hop_s, dou
   return 0;
 }
 
+// The amplitudes of sinusoids at known frequencies in a series sampled every `hop_s` seconds:
+// a least-squares fit of a constant and a sine and cosine at each frequency, so components a
+// few cycles long are read without the leakage a window would give them.
+inline std::vector<double> sine_amplitudes(const std::vector<double>& series, double hop_s, const std::vector<double>& hz) {
+  const size_t k = 1 + 2 * hz.size();
+  std::vector<std::vector<double>> a(k, std::vector<double>(k + 1, 0.0));
+  std::vector<double> basis(k);
+  for (size_t i = 0; i < series.size(); ++i) {
+    const double t = static_cast<double>(i) * hop_s;
+    basis[0] = 1.0;
+    for (size_t j = 0; j < hz.size(); ++j) {
+      basis[1 + 2 * j] = std::sin(2.0 * 3.14159265358979323846 * hz[j] * t);
+      basis[2 + 2 * j] = std::cos(2.0 * 3.14159265358979323846 * hz[j] * t);
+    }
+    for (size_t r = 0; r < k; ++r) {
+      for (size_t c = 0; c < k; ++c) a[r][c] += basis[r] * basis[c];
+      a[r][k] += basis[r] * series[i];
+    }
+  }
+  for (size_t c = 0; c < k; ++c) {
+    size_t pivot = c;
+    for (size_t r = c + 1; r < k; ++r) if (std::abs(a[r][c]) > std::abs(a[pivot][c])) pivot = r;
+    std::swap(a[c], a[pivot]);
+    if (std::abs(a[c][c]) < 1e-12) return std::vector<double>(hz.size(), 0.0);
+    for (size_t r = 0; r < k; ++r) {
+      if (r == c) continue;
+      const double f = a[r][c] / a[c][c];
+      for (size_t j = c; j <= k; ++j) a[r][j] -= f * a[c][j];
+    }
+  }
+  std::vector<double> out;
+  for (size_t j = 0; j < hz.size(); ++j) out.push_back(std::hypot(a[1 + 2 * j][k] / a[1 + 2 * j][1 + 2 * j], a[2 + 2 * j][k] / a[2 + 2 * j][2 + 2 * j]));
+  return out;
+}
+
 }  // namespace measure
